@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"github.com/zMoooooritz/go-let-observer/assets"
@@ -14,13 +15,13 @@ func (g *Game) fetchRconData() {
 		for _, player := range players {
 			playerMap[player.ID] = player
 		}
-		g.players = playerMap
+		g.mapView.players = playerMap
 	}
 	currMap, err := g.rcon.GetCurrentMap()
 	if err == nil {
 		currMapName := assets.ToFileName(currMap.ID)
-		g.currentMapOrientation = currMap.Orientation
-		if currMapName != g.currentMapName {
+		g.mapView.currentMapOrientation = currMap.Orientation
+		if currMapName != g.mapView.currentMapName {
 			img, err := loadMapImage(currMapName)
 			if err == nil {
 				g.backgroundImage = img
@@ -32,9 +33,11 @@ func (g *Game) fetchRconData() {
 
 	sessionInfo, err := g.rcon.GetSessionInfo()
 	if err == nil {
-		g.serverName = sessionInfo.ServerName
-		g.playerCurrCount = sessionInfo.PlayerCount
-		g.playerMaxCount = sessionInfo.MaxPlayerCount
+		g.mapView.serverName = sessionInfo.ServerName
+		g.mapView.playerCurrCount = sessionInfo.PlayerCount
+		g.mapView.playerMaxCount = sessionInfo.MaxPlayerCount
 	}
 
+	g.mapView.lastUpdateTime = time.Now()
+	g.mapView.initialDataLoaded = true
 }

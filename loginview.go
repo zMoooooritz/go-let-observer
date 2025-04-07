@@ -12,57 +12,57 @@ import (
 func (g *Game) updateLogin() error {
 	// Switch active input field with Tab
 	if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
-		g.activeField = (g.activeField + 1) % 3
+		g.loginView.activeField = (g.loginView.activeField + 1) % 3
 	}
 
 	// Handle Enter key to attempt login
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		if g.hostInput != "" && g.portInput != "" && g.passwordInput != "" {
+		if g.loginView.hostInput != "" && g.loginView.portInput != "" && g.loginView.passwordInput != "" {
 			cfg := rconv2.ServerConfig{
-				Host:     g.hostInput,
-				Port:     g.portInput,
-				Password: g.passwordInput,
+				Host:     g.loginView.hostInput,
+				Port:     g.loginView.portInput,
+				Password: g.loginView.passwordInput,
 			}
 			rcn, err := rconv2.NewRcon(cfg, 3)
 			if err != nil {
-				g.errorMessage = "Invalid credentials or connection error"
+				g.loginView.errorMessage = "Invalid credentials or connection error"
 			} else {
 				g.rcon = rcn
-				g.stage = StageMap
+				g.uiState = StateMap
 			}
 		} else {
-			g.errorMessage = "All fields are required"
+			g.loginView.errorMessage = "All fields are required"
 		}
 	}
 
 	// Handle text input
 	if chars := ebiten.AppendInputChars(nil); len(chars) > 0 {
 		for _, c := range chars {
-			switch g.activeField {
+			switch g.loginView.activeField {
 			case 0:
-				g.hostInput += string(c)
+				g.loginView.hostInput += string(c)
 			case 1:
-				g.portInput += string(c)
+				g.loginView.portInput += string(c)
 			case 2:
-				g.passwordInput += string(c)
+				g.loginView.passwordInput += string(c)
 			}
 		}
 	}
 
 	// Handle backspace
 	if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) {
-		switch g.activeField {
+		switch g.loginView.activeField {
 		case 0:
-			if len(g.hostInput) > 0 {
-				g.hostInput = g.hostInput[:len(g.hostInput)-1]
+			if len(g.loginView.hostInput) > 0 {
+				g.loginView.hostInput = g.loginView.hostInput[:len(g.loginView.hostInput)-1]
 			}
 		case 1:
-			if len(g.portInput) > 0 {
-				g.portInput = g.portInput[:len(g.portInput)-1]
+			if len(g.loginView.portInput) > 0 {
+				g.loginView.portInput = g.loginView.portInput[:len(g.loginView.portInput)-1]
 			}
 		case 2:
-			if len(g.passwordInput) > 0 {
-				g.passwordInput = g.passwordInput[:len(g.passwordInput)-1]
+			if len(g.loginView.passwordInput) > 0 {
+				g.loginView.passwordInput = g.loginView.passwordInput[:len(g.loginView.passwordInput)-1]
 			}
 		}
 	}
@@ -75,7 +75,7 @@ func (g *Game) drawLogin(screen *ebiten.Image) {
 	if g.backgroundImage != nil {
 		screenSize := screen.Bounds().Size()
 		imageSize := g.backgroundImage.Bounds().Size()
-		scale := (float64(screenSize.X) / float64(imageSize.X)) * g.zoomLevel
+		scale := float64(screenSize.X) / float64(imageSize.X)
 
 		options := &ebiten.DrawImageOptions{}
 		options.GeoM.Scale(scale, scale)
@@ -100,7 +100,7 @@ func (g *Game) drawLogin(screen *ebiten.Image) {
 	passwordRectColor := WHITE
 
 	// Highlight the active field
-	switch g.activeField {
+	switch g.loginView.activeField {
 	case 0:
 		hostRectColor = GREEN
 	case 1:
@@ -115,13 +115,13 @@ func (g *Game) drawLogin(screen *ebiten.Image) {
 	vector.DrawFilledRect(screen, 180, 200, 300, 30, passwordRectColor, false) // Password field
 
 	// Draw input fields
-	drawTextNoShift(screen, g.hostInput, 185, 100, color.Black, g.fnt.title)
-	drawTextNoShift(screen, g.portInput, 185, 160, color.Black, g.fnt.title)
-	drawTextNoShift(screen, g.passwordInput, 185, 220, color.Black, g.fnt.title)
+	drawTextNoShift(screen, g.loginView.hostInput, 185, 100, color.Black, g.fnt.title)
+	drawTextNoShift(screen, g.loginView.portInput, 185, 160, color.Black, g.fnt.title)
+	drawTextNoShift(screen, g.loginView.passwordInput, 185, 220, color.Black, g.fnt.title)
 
 	// Draw error message if any
-	if g.errorMessage != "" {
-		drawTextNoShift(screen, g.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, g.fnt.title)
+	if g.loginView.errorMessage != "" {
+		drawTextNoShift(screen, g.loginView.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, g.fnt.title)
 	}
 
 	// Draw instructions

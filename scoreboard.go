@@ -32,7 +32,7 @@ func (g *Game) drawScoreboard(screen *ebiten.Image) {
 	textY += lineHeight
 
 	sortedPlayers := []hll.DetailedPlayerInfo{}
-	for _, player := range g.players {
+	for _, player := range g.mapView.players {
 		sortedPlayers = append(sortedPlayers, player)
 	}
 	sort.Slice(sortedPlayers, func(i, j int) bool {
