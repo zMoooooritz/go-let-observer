@@ -11,6 +11,10 @@ import (
 	"github.com/zMoooooritz/go-let-observer/assets"
 )
 
+const (
+	roleCount = 14
+)
+
 func loadRoleImages() map[string]*ebiten.Image {
 	roleImages := make(map[string]*ebiten.Image)
 	for index := range roleCount {

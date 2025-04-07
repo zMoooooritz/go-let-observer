@@ -25,7 +25,7 @@ func (g *Game) drawServerName(screen *ebiten.Image) {
 
 	textX := overlayX + 10
 	textY := overlayY + 20
-	drawText(screen, g.serverName, textX, textY, color.White, g.fnt.title)
+	drawText(screen, g.mapView.serverName, textX, textY, color.White, g.fnt.title)
 }
 
 func (g *Game) drawPlayerCount(screen *ebiten.Image) {
@@ -40,6 +40,6 @@ func (g *Game) drawPlayerCount(screen *ebiten.Image) {
 
 	textX := overlayX + 10
 	textY := overlayY + 20
-	info := fmt.Sprintf("Players: %d/%d", g.playerCurrCount, g.playerMaxCount)
+	info := fmt.Sprintf("Players: %d/%d", g.mapView.playerCurrCount, g.mapView.playerMaxCount)
 	drawText(screen, info, textX, textY, color.White, g.fnt.title)
 }
