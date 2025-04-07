@@ -30,8 +30,10 @@ var (
 	BLUE  = color.RGBA{0, 0, 255, 255}
 	WHITE = color.RGBA{255, 255, 255, 255}
 
+	// values set via ldflags
 	Version   = ""
 	CommitSHA = ""
+	Date      = ""
 
 	host     = flag.String("host", "", "RCON server host")
 	port     = flag.String("port", "", "RCON server port")

@@ -1,0 +1,70 @@
+version: 2
+
+env:
+  - GO111MODULE=on
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: go-let-observer-linux
+    binary: go-let-observer
+    flags:
+      - -trimpath
+    ldflags:
+      -s -w
+      -X main.Version={{ .Version }}
+      -X main.CommitSHA={{ .Commit }}
+      -X main.Date={{ .Date }}
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=1
+
+  - id: go-let-observer-windows
+    binary: go-let-observer
+    flags:
+      - -trimpath
+    ldflags:
+      -s -w
+      -X main.Version={{ .Version }}
+      -X main.CommitSHA={{ .Commit }}
+      -X main.Date={{ .Date }}
+      -H=windowsgui
+    goos:
+      - windows
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=0
+
+nfpms:
+  - ids:
+      - go-let-observer-linux
+    vendor: Moooooritz
+    homepage: "https://moritz.biering.dev/"
+    maintainer: "Moritz Biering <moritzbiering.mb@gmail.com>"
+    description: "Real-time Hell Let Loose server observer with interactive map"
+    license: MIT
+    formats:
+      - apk
+      - deb
+      - rpm
+    bindir: /usr/bin
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ .Tag }}-next"
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
