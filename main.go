@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"image/color"
@@ -27,14 +29,35 @@ var (
 	GREEN = color.RGBA{0, 255, 0, 255}
 	BLUE  = color.RGBA{0, 0, 255, 255}
 	WHITE = color.RGBA{255, 255, 255, 255}
+
+	Version   = ""
+	CommitSHA = ""
+
+	host     = flag.String("host", "", "RCON server host")
+	port     = flag.String("port", "", "RCON server port")
+	password = flag.String("password", "", "RCON server password")
+	version  = flag.Bool("version", false, "Display version")
 )
 
 func main() {
-	// Define CLI flags
-	host := flag.String("host", "", "RCON server host")
-	port := flag.String("port", "", "RCON server port")
-	password := flag.String("password", "", "RCON server password")
 	flag.Parse()
+
+	if *version {
+		if len(CommitSHA) > 7 {
+			CommitSHA = CommitSHA[:7]
+		}
+		if Version == "" {
+			Version = "(built from source)"
+		}
+
+		fmt.Printf("go-let-observer %s", Version)
+		if len(CommitSHA) > 0 {
+			fmt.Printf(" (%s)", CommitSHA)
+		}
+
+		fmt.Println()
+		os.Exit(0)
+	}
 
 	game := NewGame()
 	// Check if CLI arguments are provided

@@ -113,6 +113,7 @@ func NewGame() *Game {
 		sizeX: SCEEN_SIZE,
 		sizeY: SCEEN_SIZE,
 	}
+	loginView := &LoginView{}
 	mapView := &MapView{
 		CameraState: CameraState{
 			zoomLevel: MIN_ZOOM_LEVEL,
@@ -128,6 +129,7 @@ func NewGame() *Game {
 		uiState:         StateLogin,
 		backgroundImage: loadGreeterImage(),
 		dim:             dim,
+		loginView:       loginView,
 		mapView:         mapView,
 	}
 }
