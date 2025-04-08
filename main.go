@@ -5,31 +5,16 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
-	"image/color"
 	_ "image/png"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
-)
-
-const (
-	MIN_ZOOM_LEVEL       = 1.0
-	MAX_ZOOM_LEVEL       = 10.0
-	ZOOM_STEP_MULTIPLIER = 0.1
-
-	RCON_FETCH_INTERVAL = 500 * time.Millisecond
-
-	SCEEN_SIZE = 1000
+	"github.com/zMoooooritz/go-let-observer/pkg/game"
+	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
 var (
-	RED   = color.RGBA{255, 0, 0, 255}
-	GREEN = color.RGBA{0, 255, 0, 255}
-	BLUE  = color.RGBA{0, 0, 255, 255}
-	WHITE = color.RGBA{255, 255, 255, 255}
-
 	// values set via ldflags
 	Version   = ""
 	CommitSHA = ""
@@ -38,6 +23,7 @@ var (
 	host     = flag.String("host", "", "RCON server host")
 	port     = flag.String("port", "", "RCON server port")
 	password = flag.String("password", "", "RCON server password")
+	size     = flag.Int("size", game.ROOT_SCALING_SIZE, "Screen size")
 	version  = flag.Bool("version", false, "Display version")
 )
 
@@ -61,8 +47,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	game := NewGame()
-	// Check if CLI arguments are provided
+	var rcon *rconv2.Rcon
 	if *host != "" && *port != "" && *password != "" {
 		cfg := rconv2.ServerConfig{
 			Host:     *host,
@@ -71,18 +56,18 @@ func main() {
 		}
 
 		// Attempt to connect with the provided credentials
-		rcon, err := rconv2.NewRcon(cfg, 3)
+		var err error
+		rcon, err = rconv2.NewRcon(cfg, 3)
 		if err != nil {
 			log.Fatal("Invalid CLI credentials or connection error")
 		}
-
-		game.rcon = rcon
-		game.uiState = StateMap
 	}
+	size := util.Clamp(*size, game.MIN_SCREEN_SIZE, game.MAX_SCREEN_SIZE)
+	gm := game.NewGame(size, rcon)
 
-	ebiten.SetWindowSize(game.dim.sizeX, game.dim.sizeY)
+	ebiten.SetWindowSize(size, size)
 	ebiten.SetWindowTitle("HLL Observer")
-	if err := ebiten.RunGame(game); err != nil {
+	if err := ebiten.RunGame(gm); err != nil {
 		log.Fatal(err)
 	}
 }

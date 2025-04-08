@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"log"
@@ -9,13 +9,17 @@ import (
 )
 
 type Font struct {
-	huge   font.Face
-	title  font.Face
-	normal font.Face
-	small  font.Face
+	Huge   font.Face
+	Title  font.Face
+	Normal font.Face
+	Small  font.Face
 }
 
-func loadFonts() Font {
+func scaledFontSize(fontSize int, screenSize int) float64 {
+	return float64(fontSize) * float64(screenSize) / 1000
+}
+
+func LoadFonts(screenSize int) Font {
 	fnt := Font{}
 
 	fontData, err := assets.Assets.ReadFile("fonts/RobotoMono-Regular.ttf")
@@ -29,44 +33,44 @@ func loadFonts() Font {
 	}
 
 	smallFont, err := opentype.NewFace(tt, &opentype.FaceOptions{
-		Size:    10,
+		Size:    scaledFontSize(10, screenSize),
 		DPI:     72,
 		Hinting: font.HintingFull,
 	})
 	if err != nil {
 		log.Fatalf("failed to create normal font: %v", err)
 	}
-	fnt.small = smallFont
+	fnt.Small = smallFont
 
 	normalFont, err := opentype.NewFace(tt, &opentype.FaceOptions{
-		Size:    14,
+		Size:    scaledFontSize(14, screenSize),
 		DPI:     72,
 		Hinting: font.HintingFull,
 	})
 	if err != nil {
 		log.Fatalf("failed to create normal font: %v", err)
 	}
-	fnt.normal = normalFont
+	fnt.Normal = normalFont
 
 	titleFont, err := opentype.NewFace(tt, &opentype.FaceOptions{
-		Size:    18,
+		Size:    scaledFontSize(18, screenSize),
 		DPI:     72,
 		Hinting: font.HintingFull,
 	})
 	if err != nil {
-		log.Fatalf("failed to create title font: %v", err)
+		log.Fatalf("failed to create.Title font: %v", err)
 	}
-	fnt.title = titleFont
+	fnt.Title = titleFont
 
 	hugeFont, err := opentype.NewFace(tt, &opentype.FaceOptions{
-		Size:    24,
+		Size:    scaledFontSize(24, screenSize),
 		DPI:     72,
 		Hinting: font.HintingFull,
 	})
 	if err != nil {
-		log.Fatalf("failed to create title font: %v", err)
+		log.Fatalf("failed to create.Title font: %v", err)
 	}
-	fnt.huge = hugeFont
+	fnt.Huge = hugeFont
 
 	return fnt
 }

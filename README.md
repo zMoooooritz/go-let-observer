@@ -1,4 +1,4 @@
-# go-let-observer
+# HLL Observer
 
 [![Latest Release](https://img.shields.io/github/release/zMoooooritz/go-let-observer.svg?style=for-the-badge)](https://github.com/zMoooooritz/go-let-observer/releases)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=for-the-badge)](https://pkg.go.dev/github.com/zMoooooritz/go-let-observer)
@@ -36,6 +36,8 @@ To install the Go package, simply run:
 go install github.com/zMoooooritz/go-let-observer@latest
 ```
 
+or download from [releases](https://github.com/zMoooooritz/go-let-observer/releases)
+
 ### Build the project
 
 Clone the repository and build the project:
@@ -62,9 +64,26 @@ Usage of go-let-observer:
         RCON server password
   -port string
         RCON server port
+  -size int
+        Screen size (default 1000)
   -version
         Display version
 ```
+
+---
+
+## 🎮 Keybinds
+
+| Keybind              | Description                        |
+|----------------------|------------------------------------|
+| `LeftClick`          | Show/Hide player info              |
+| `RightClick-Drag`    | Move the map view                  |
+| `MouseWheel`         | Zoom in/out on the map             |
+| `+` / `-`            | Increase/Decrease update interval  |
+| `G`                  | Toggle grid overlay                |
+| `H`                  | Toggle header overlay              |
+| `Tab`                | Show scoreboard                    |
+| `Esc`, `Q`, `Ctrl+C` | Exit the application               |
 
 ---
 

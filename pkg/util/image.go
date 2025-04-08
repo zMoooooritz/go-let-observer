@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ const (
 	roleCount = 14
 )
 
-func loadRoleImages() map[string]*ebiten.Image {
+func LoadRoleImages() map[string]*ebiten.Image {
 	roleImages := make(map[string]*ebiten.Image)
 	for index := range roleCount {
 		roleName := strings.ToLower(string(hll.RoleFromInt(index)))
@@ -35,7 +35,7 @@ func loadRoleImages() map[string]*ebiten.Image {
 	return roleImages
 }
 
-func loadMapImage(mapName string) (*ebiten.Image, error) {
+func LoadMapImage(mapName string) (*ebiten.Image, error) {
 	imgData, err := assets.Assets.ReadFile("tacmaps/" + mapName + ".png")
 	if err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func loadMapImage(mapName string) (*ebiten.Image, error) {
 	return ebiten.NewImageFromImage(img), nil
 }
 
-func loadGreeterImage() *ebiten.Image {
+func LoadGreeterImage() *ebiten.Image {
 	imgData, err := assets.Assets.ReadFile("image/greeter.png")
 	if err != nil {
 		return nil

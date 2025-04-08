@@ -1,12 +1,12 @@
-package main
+package game
 
 import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
+	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
 func (g *Game) updateLogin() error {
@@ -71,59 +71,61 @@ func (g *Game) updateLogin() error {
 }
 
 func (g *Game) drawLogin(screen *ebiten.Image) {
+	// Calculate scaling factor
+	screenSize := screen.Bounds().Size()
+
 	// Clear the screen
 	if g.backgroundImage != nil {
-		screenSize := screen.Bounds().Size()
 		imageSize := g.backgroundImage.Bounds().Size()
-		scale := float64(screenSize.X) / float64(imageSize.X)
+		imageScale := float64(screenSize.X) / float64(imageSize.X)
 
 		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Scale(scale, scale)
+		options.GeoM.Scale(imageScale, imageScale)
 		screen.DrawImage(g.backgroundImage, options)
-
-		vector.DrawFilledRect(screen, 0, 0, 1000, 400, color.RGBA{0, 0, 0, 200}, false)
 	} else {
 		screen.Fill(color.RGBA{31, 31, 31, 255})
 	}
 
-	// Draw title
-	drawTextNoShift(screen, "Login to HLL Observer", 20, 40, color.White, g.fnt.huge)
+	util.DrawScaledRect(screen, 0, 0, 1000, 400, CLR_OVERLAY, g.dim.scaleFactor)
+
+	// Draw.Title
+	util.DrawTextNoShift(screen, "Login to HLL Observer", 20, 40, CLR_WHITE, g.fnt.Huge, g.dim.scaleFactor)
 
 	// Draw input labels
-	drawTextNoShift(screen, "Host:", 50, 100, color.White, g.fnt.title)
-	drawTextNoShift(screen, "Port:", 50, 160, color.White, g.fnt.title)
-	drawTextNoShift(screen, "Password:", 50, 220, color.White, g.fnt.title)
+	util.DrawTextNoShift(screen, "Host:", 50, 100, CLR_WHITE, g.fnt.Title, g.dim.scaleFactor)
+	util.DrawTextNoShift(screen, "Port:", 50, 160, CLR_WHITE, g.fnt.Title, g.dim.scaleFactor)
+	util.DrawTextNoShift(screen, "Password:", 50, 220, CLR_WHITE, g.fnt.Title, g.dim.scaleFactor)
 
 	// Draw rectangles around input fields
-	hostRectColor := WHITE
-	portRectColor := WHITE
-	passwordRectColor := WHITE
+	hostRectColor := CLR_WHITE
+	portRectColor := CLR_WHITE
+	passwordRectColor := CLR_WHITE
 
 	// Highlight the active field
 	switch g.loginView.activeField {
 	case 0:
-		hostRectColor = GREEN
+		hostRectColor = CLR_SELECTED
 	case 1:
-		portRectColor = GREEN
+		portRectColor = CLR_SELECTED
 	case 2:
-		passwordRectColor = GREEN
+		passwordRectColor = CLR_SELECTED
 	}
 
 	// Draw rectangles
-	vector.DrawFilledRect(screen, 180, 80, 300, 30, hostRectColor, false)      // Host field
-	vector.DrawFilledRect(screen, 180, 140, 300, 30, portRectColor, false)     // Port field
-	vector.DrawFilledRect(screen, 180, 200, 300, 30, passwordRectColor, false) // Password field
+	util.DrawScaledRect(screen, 180, 80, 300, 30, hostRectColor, g.dim.scaleFactor)
+	util.DrawScaledRect(screen, 180, 140, 300, 30, portRectColor, g.dim.scaleFactor)
+	util.DrawScaledRect(screen, 180, 200, 300, 30, passwordRectColor, g.dim.scaleFactor)
 
 	// Draw input fields
-	drawTextNoShift(screen, g.loginView.hostInput, 185, 100, color.Black, g.fnt.title)
-	drawTextNoShift(screen, g.loginView.portInput, 185, 160, color.Black, g.fnt.title)
-	drawTextNoShift(screen, g.loginView.passwordInput, 185, 220, color.Black, g.fnt.title)
+	util.DrawTextNoShift(screen, g.loginView.hostInput, 185, 100, CLR_BLACK, g.fnt.Title, g.dim.scaleFactor)
+	util.DrawTextNoShift(screen, g.loginView.portInput, 185, 160, CLR_BLACK, g.fnt.Title, g.dim.scaleFactor)
+	util.DrawTextNoShift(screen, g.loginView.passwordInput, 185, 220, CLR_BLACK, g.fnt.Title, g.dim.scaleFactor)
 
 	// Draw error message if any
 	if g.loginView.errorMessage != "" {
-		drawTextNoShift(screen, g.loginView.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, g.fnt.title)
+		util.DrawTextNoShift(screen, g.loginView.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, g.fnt.Title, g.dim.scaleFactor)
 	}
 
 	// Draw instructions
-	drawTextNoShift(screen, "Press Enter to confirm, Tab to switch fields", 50, 340, color.Gray{Y: 200}, g.fnt.title)
+	util.DrawTextNoShift(screen, "Press Enter to confirm, Tab to switch fields", 50, 340, color.Gray{Y: 200}, g.fnt.Title, g.dim.scaleFactor)
 }
