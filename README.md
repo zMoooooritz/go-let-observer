@@ -12,8 +12,8 @@ A **Go-based observer tool** for the game **Hell Let Loose**, providing a graphi
 
 ## 📸 Preview
 
-<!-- Placeholder for an image -->
-![Preview Image](#)
+| ![HLL-Observer-1](https://github.com/user-attachments/assets/552786c2-6c72-4061-914a-44a07bc1c5e1) | ![HLL-Observer-2](https://github.com/user-attachments/assets/d3643146-d35c-48ea-ac34-2dd43dcf8519) |
+|:--------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------|
 
 ---
 
