@@ -50,7 +50,6 @@ func (g *Game) drawMap(screen *ebiten.Image) {
 		g.drawHeader(screen)
 	}
 
-	// Draw the scoreboard if active
 	if g.mapView.showScoreboard {
 		g.drawScoreboard(screen)
 	} else if g.mapView.selectedPlayerID != "" {
@@ -101,10 +100,8 @@ func (g *Game) drawPlayers(screen *ebiten.Image) {
 			clr = CLR_SELECTED
 		}
 
-		// Draw the base circle
 		vector.DrawFilledCircle(screen, float32(x), float32(y), float32(util.PlayerCircleRadius(g.mapView.zoomLevel)), clr, false)
 
-		// Overlay the role icon
 		roleImage, ok := g.mapView.roleImages[strings.ToLower(string(player.Role))]
 		if ok {
 			targetSize := util.PlayerIconSize(g.mapView.zoomLevel)
@@ -165,7 +162,6 @@ func (g *Game) drawGrid(screen *ebiten.Image, width, height int) {
 }
 
 func (g *Game) handleMouseInput() {
-	// Handle zooming with mouse wheel
 	mouseX, mouseY := ebiten.CursorPosition()
 	_, wheelY := ebiten.Wheel()
 	if wheelY != 0 {
@@ -177,14 +173,12 @@ func (g *Game) handleMouseInput() {
 			g.mapView.zoomLevel = MAX_ZOOM_LEVEL
 		}
 
-		// Adjust pan to zoom into the mouse pointer location
 		mouseWorldX := (float64(mouseX) - g.mapView.panX) / oldZoom
 		mouseWorldY := (float64(mouseY) - g.mapView.panY) / oldZoom
 		g.mapView.panX -= mouseWorldX * (g.mapView.zoomLevel - oldZoom)
 		g.mapView.panY -= mouseWorldY * (g.mapView.zoomLevel - oldZoom)
 	}
 
-	// Handle panning with mouse drag
 	if g.mapView.zoomLevel == MIN_ZOOM_LEVEL {
 		g.mapView.panX = 0
 		g.mapView.panY = 0
@@ -206,7 +200,6 @@ func (g *Game) handleMouseInput() {
 		g.mapView.panY = util.Clamp(g.mapView.panY, float64(g.dim.sizeY)*(MIN_ZOOM_LEVEL-g.mapView.zoomLevel), 0)
 	}
 
-	// Detect clicks on player circles
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		foundPlayer := false
 		mouseX, mouseY := ebiten.CursorPosition()
@@ -219,7 +212,6 @@ func (g *Game) handleMouseInput() {
 			x = x*g.mapView.zoomLevel + g.mapView.panX
 			y = y*g.mapView.zoomLevel + g.mapView.panY
 
-			// Check if the mouse click is within the circle
 			radius := util.PlayerCircleRadius(g.mapView.zoomLevel)
 			if (float64(mouseX)-x)*(float64(mouseX)-x)+(float64(mouseY)-y)*(float64(mouseY)-y) <= radius*radius {
 				g.mapView.selectedPlayerID = player.ID
@@ -234,7 +226,6 @@ func (g *Game) handleMouseInput() {
 }
 
 func (g *Game) handleKeyboardInput() {
-	// Toggle scoreboard when holding Tab
 	if ebiten.IsKeyPressed(ebiten.KeyTab) {
 		g.mapView.showScoreboard = true
 		g.mapView.selectedPlayerID = ""
@@ -261,5 +252,4 @@ func (g *Game) handleKeyboardInput() {
 			g.mapView.intervalIndex -= 1
 		}
 	}
-
 }

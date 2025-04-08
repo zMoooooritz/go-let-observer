@@ -4,8 +4,8 @@ go 1.24.1
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.8.7
-	github.com/zMoooooritz/go-let-loose v0.4.2
-	golang.org/x/image v0.25.0
+	github.com/zMoooooritz/go-let-loose v0.4.3
+	golang.org/x/image v0.26.0
 )
 
 require (
@@ -15,5 +15,5 @@ require (
 	github.com/jezek/xgb v1.1.1 // indirect
 	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 )

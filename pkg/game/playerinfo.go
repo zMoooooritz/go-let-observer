@@ -21,35 +21,35 @@ func (g *Game) drawPlayerOverlay(screen *ebiten.Image, player hll.DetailedPlayer
 	lineHeight := 20
 	dividerHeight := 30
 
-	util.DrawText(screen, "Player Info", textX, textY, CLR_WHITE, g.fnt.Title)
+	util.DrawText(screen, "Player Info", textX, textY, CLR_WHITE, g.fnt.Normal)
 	textY += dividerHeight
 	textX += 10
-	util.DrawText(screen, "Name: "+player.Name, textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Name: "+player.Name, textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "ClanTag: "+player.ClanTag, textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Clantag: "+player.ClanTag, textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Level: "+strconv.Itoa(player.Level), textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Level: "+strconv.Itoa(player.Level), textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += dividerHeight
-	util.DrawText(screen, "Team: "+string(player.Team), textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Team: "+string(player.Team), textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Unit: "+string(player.Unit.Name), textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Unit: "+string(player.Unit.Name), textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Role: "+string(player.Role), textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Role: "+string(player.Role), textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Loadout: "+player.Loadout, textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Loadout: "+player.Loadout, textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += dividerHeight
-	util.DrawText(screen, "Kills: "+strconv.Itoa(player.Kills), textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Kills: "+strconv.Itoa(player.Kills), textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Deaths: "+strconv.Itoa(player.Deaths), textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Deaths: "+strconv.Itoa(player.Deaths), textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Score:", textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Score:", textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Combat : "+strconv.Itoa(player.Score.Combat), textX+10, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Combat : "+strconv.Itoa(player.Score.Combat), textX+10, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Offense: "+strconv.Itoa(player.Score.Offense), textX+10, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Offense: "+strconv.Itoa(player.Score.Offense), textX+10, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Defense: "+strconv.Itoa(player.Score.Defense), textX+10, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Defense: "+strconv.Itoa(player.Score.Defense), textX+10, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
-	util.DrawText(screen, "Support: "+strconv.Itoa(player.Score.Support), textX+10, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Support: "+strconv.Itoa(player.Score.Support), textX+10, textY, CLR_WHITE, g.fnt.Small)
 	textY += lineHeight
 }

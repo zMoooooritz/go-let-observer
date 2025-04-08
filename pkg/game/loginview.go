@@ -10,12 +10,10 @@ import (
 )
 
 func (g *Game) updateLogin() error {
-	// Switch active input field with Tab
 	if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
 		g.loginView.activeField = (g.loginView.activeField + 1) % 3
 	}
 
-	// Handle Enter key to attempt login
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		if g.loginView.hostInput != "" && g.loginView.portInput != "" && g.loginView.passwordInput != "" {
 			cfg := rconv2.ServerConfig{
@@ -35,7 +33,6 @@ func (g *Game) updateLogin() error {
 		}
 	}
 
-	// Handle text input
 	if chars := ebiten.AppendInputChars(nil); len(chars) > 0 {
 		for _, c := range chars {
 			switch g.loginView.activeField {
@@ -49,7 +46,6 @@ func (g *Game) updateLogin() error {
 		}
 	}
 
-	// Handle backspace
 	if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) {
 		switch g.loginView.activeField {
 		case 0:
@@ -71,10 +67,8 @@ func (g *Game) updateLogin() error {
 }
 
 func (g *Game) drawLogin(screen *ebiten.Image) {
-	// Calculate scaling factor
 	screenSize := screen.Bounds().Size()
 
-	// Clear the screen
 	if g.backgroundImage != nil {
 		imageSize := g.backgroundImage.Bounds().Size()
 		imageScale := float64(screenSize.X) / float64(imageSize.X)
@@ -88,20 +82,16 @@ func (g *Game) drawLogin(screen *ebiten.Image) {
 
 	util.DrawScaledRect(screen, 0, 0, 1000, 400, CLR_OVERLAY)
 
-	// Draw.Title
-	util.DrawText(screen, "Login to HLL Observer", 20, 40, CLR_WHITE, g.fnt.Huge)
+	util.DrawText(screen, "Login to HLL Observer", 20, 40, CLR_WHITE, g.fnt.Title)
 
-	// Draw input labels
-	util.DrawText(screen, "Host:", 50, 100, CLR_WHITE, g.fnt.Title)
-	util.DrawText(screen, "Port:", 50, 160, CLR_WHITE, g.fnt.Title)
-	util.DrawText(screen, "Password:", 50, 220, CLR_WHITE, g.fnt.Title)
+	util.DrawText(screen, "Host:", 50, 100, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Port:", 50, 160, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, "Password:", 50, 220, CLR_WHITE, g.fnt.Normal)
 
-	// Draw rectangles around input fields
 	hostRectColor := CLR_WHITE
 	portRectColor := CLR_WHITE
 	passwordRectColor := CLR_WHITE
 
-	// Highlight the active field
 	switch g.loginView.activeField {
 	case 0:
 		hostRectColor = CLR_SELECTED
@@ -111,21 +101,17 @@ func (g *Game) drawLogin(screen *ebiten.Image) {
 		passwordRectColor = CLR_SELECTED
 	}
 
-	// Draw rectangles
 	util.DrawScaledRect(screen, 180, 80, 300, 30, hostRectColor)
 	util.DrawScaledRect(screen, 180, 140, 300, 30, portRectColor)
 	util.DrawScaledRect(screen, 180, 200, 300, 30, passwordRectColor)
 
-	// Draw input fields
-	util.DrawText(screen, g.loginView.hostInput, 185, 100, CLR_BLACK, g.fnt.Title)
-	util.DrawText(screen, g.loginView.portInput, 185, 160, CLR_BLACK, g.fnt.Title)
-	util.DrawText(screen, g.loginView.passwordInput, 185, 220, CLR_BLACK, g.fnt.Title)
+	util.DrawText(screen, g.loginView.hostInput, 185, 100, CLR_BLACK, g.fnt.Normal)
+	util.DrawText(screen, g.loginView.portInput, 185, 160, CLR_BLACK, g.fnt.Normal)
+	util.DrawText(screen, g.loginView.passwordInput, 185, 220, CLR_BLACK, g.fnt.Normal)
 
-	// Draw error message if any
 	if g.loginView.errorMessage != "" {
-		util.DrawText(screen, g.loginView.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, g.fnt.Title)
+		util.DrawText(screen, g.loginView.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, g.fnt.Normal)
 	}
 
-	// Draw instructions
-	util.DrawText(screen, "Press Enter to confirm, Tab to switch fields", 50, 340, color.Gray{Y: 200}, g.fnt.Title)
+	util.DrawText(screen, "Press Enter to confirm, Tab to switch fields", 50, 340, color.Gray{Y: 200}, g.fnt.Normal)
 }

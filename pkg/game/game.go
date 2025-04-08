@@ -152,7 +152,6 @@ func NewGame(size int, rcon *rconv2.Rcon) *Game {
 }
 
 func (g *Game) Update() error {
-	// Handle Ctrl+C to exit the application
 	if ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyC) || ebiten.IsKeyPressed(ebiten.KeyEscape) {
 		return ebiten.Termination
 	}
