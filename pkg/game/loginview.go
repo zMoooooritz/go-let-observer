@@ -86,15 +86,15 @@ func (g *Game) drawLogin(screen *ebiten.Image) {
 		screen.Fill(color.RGBA{31, 31, 31, 255})
 	}
 
-	util.DrawScaledRect(screen, 0, 0, 1000, 400, CLR_OVERLAY, g.dim.scaleFactor)
+	util.DrawScaledRect(screen, 0, 0, 1000, 400, CLR_OVERLAY)
 
 	// Draw.Title
-	util.DrawTextNoShift(screen, "Login to HLL Observer", 20, 40, CLR_WHITE, g.fnt.Huge, g.dim.scaleFactor)
+	util.DrawText(screen, "Login to HLL Observer", 20, 40, CLR_WHITE, g.fnt.Huge)
 
 	// Draw input labels
-	util.DrawTextNoShift(screen, "Host:", 50, 100, CLR_WHITE, g.fnt.Title, g.dim.scaleFactor)
-	util.DrawTextNoShift(screen, "Port:", 50, 160, CLR_WHITE, g.fnt.Title, g.dim.scaleFactor)
-	util.DrawTextNoShift(screen, "Password:", 50, 220, CLR_WHITE, g.fnt.Title, g.dim.scaleFactor)
+	util.DrawText(screen, "Host:", 50, 100, CLR_WHITE, g.fnt.Title)
+	util.DrawText(screen, "Port:", 50, 160, CLR_WHITE, g.fnt.Title)
+	util.DrawText(screen, "Password:", 50, 220, CLR_WHITE, g.fnt.Title)
 
 	// Draw rectangles around input fields
 	hostRectColor := CLR_WHITE
@@ -112,20 +112,20 @@ func (g *Game) drawLogin(screen *ebiten.Image) {
 	}
 
 	// Draw rectangles
-	util.DrawScaledRect(screen, 180, 80, 300, 30, hostRectColor, g.dim.scaleFactor)
-	util.DrawScaledRect(screen, 180, 140, 300, 30, portRectColor, g.dim.scaleFactor)
-	util.DrawScaledRect(screen, 180, 200, 300, 30, passwordRectColor, g.dim.scaleFactor)
+	util.DrawScaledRect(screen, 180, 80, 300, 30, hostRectColor)
+	util.DrawScaledRect(screen, 180, 140, 300, 30, portRectColor)
+	util.DrawScaledRect(screen, 180, 200, 300, 30, passwordRectColor)
 
 	// Draw input fields
-	util.DrawTextNoShift(screen, g.loginView.hostInput, 185, 100, CLR_BLACK, g.fnt.Title, g.dim.scaleFactor)
-	util.DrawTextNoShift(screen, g.loginView.portInput, 185, 160, CLR_BLACK, g.fnt.Title, g.dim.scaleFactor)
-	util.DrawTextNoShift(screen, g.loginView.passwordInput, 185, 220, CLR_BLACK, g.fnt.Title, g.dim.scaleFactor)
+	util.DrawText(screen, g.loginView.hostInput, 185, 100, CLR_BLACK, g.fnt.Title)
+	util.DrawText(screen, g.loginView.portInput, 185, 160, CLR_BLACK, g.fnt.Title)
+	util.DrawText(screen, g.loginView.passwordInput, 185, 220, CLR_BLACK, g.fnt.Title)
 
 	// Draw error message if any
 	if g.loginView.errorMessage != "" {
-		util.DrawTextNoShift(screen, g.loginView.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, g.fnt.Title, g.dim.scaleFactor)
+		util.DrawText(screen, g.loginView.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, g.fnt.Title)
 	}
 
 	// Draw instructions
-	util.DrawTextNoShift(screen, "Press Enter to confirm, Tab to switch fields", 50, 340, color.Gray{Y: 200}, g.fnt.Title, g.dim.scaleFactor)
+	util.DrawText(screen, "Press Enter to confirm, Tab to switch fields", 50, 340, color.Gray{Y: 200}, g.fnt.Title)
 }

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"image/color"
 	"sync"
 	"time"
@@ -47,9 +48,8 @@ var fetchIntervalSteps = []time.Duration{
 }
 
 type ViewDimension struct {
-	sizeX       int
-	sizeY       int
-	scaleFactor float32
+	sizeX int
+	sizeY int
 }
 
 type LoginView struct {
@@ -114,10 +114,12 @@ type Game struct {
 }
 
 func NewGame(size int, rcon *rconv2.Rcon) *Game {
+	util.ScaleFactor = float32(size) / float32(ROOT_SCALING_SIZE)
+	fmt.Println(util.ScaleFactor)
+
 	dim := ViewDimension{
-		sizeX:       size,
-		sizeY:       size,
-		scaleFactor: float32(size) / float32(ROOT_SCALING_SIZE),
+		sizeX: size,
+		sizeY: size,
 	}
 	loginView := &LoginView{}
 	mapView := &MapView{

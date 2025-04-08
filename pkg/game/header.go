@@ -18,11 +18,11 @@ func (g *Game) drawServerName(screen *ebiten.Image) {
 	overlayX := 0
 	overlayY := 0
 
-	util.DrawScaledRect(screen, overlayX, overlayY, overlayWidth, overlayHeight, CLR_OVERLAY, g.dim.scaleFactor)
+	util.DrawScaledRect(screen, overlayX, overlayY, overlayWidth, overlayHeight, CLR_OVERLAY)
 
 	textX := overlayX + 10
-	textY := overlayY + 20
-	util.DrawText(screen, g.mapView.serverName, textX, textY, CLR_WHITE, g.fnt.Title, g.dim.scaleFactor)
+	textY := overlayY + 30
+	util.DrawText(screen, g.mapView.serverName, textX, textY, CLR_WHITE, g.fnt.Title)
 }
 
 func (g *Game) drawPlayerCount(screen *ebiten.Image) {
@@ -31,10 +31,10 @@ func (g *Game) drawPlayerCount(screen *ebiten.Image) {
 	overlayX := 0
 	overlayY := 50
 
-	util.DrawScaledRect(screen, overlayX, overlayY, overlayWidth, overlayHeight, CLR_OVERLAY, g.dim.scaleFactor)
+	util.DrawScaledRect(screen, overlayX, overlayY, overlayWidth, overlayHeight, CLR_OVERLAY)
 
 	textX := overlayX + 10
-	textY := overlayY + 20
+	textY := overlayY + 30
 	info := fmt.Sprintf("Players: %d/%d", g.mapView.playerCurrCount, g.mapView.playerMaxCount)
-	util.DrawText(screen, info, textX, textY, CLR_WHITE, g.fnt.Title, g.dim.scaleFactor)
+	util.DrawText(screen, info, textX, textY, CLR_WHITE, g.fnt.Title)
 }

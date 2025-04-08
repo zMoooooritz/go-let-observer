@@ -1,16 +1,20 @@
 package util
 
 import (
+	"image"
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"golang.org/x/image/font"
+	"golang.org/x/image/math/fixed"
 )
 
-// Generic Clamp function for int and float
+var (
+	ScaleFactor float32
+)
+
 func Clamp[T int | float64](value, min, max T) T {
 	if value < min {
 		return min
@@ -21,31 +25,40 @@ func Clamp[T int | float64](value, min, max T) T {
 	return value
 }
 
-func DrawText(screen *ebiten.Image, txt string, x, y int, clr color.Color, face font.Face, scaleFactor float32) {
-	bounds, _ := font.BoundString(face, txt)
-	height := (bounds.Max.Y - bounds.Min.Y).Ceil()
-	x = int(float32(x) * scaleFactor)
-	y = int(float32(y) * scaleFactor)
-	y += height / 2
-	text.Draw(screen, txt, face, x, y, clr)
+func DrawText(screen *ebiten.Image, txt string, x, y int, clr color.Color, face font.Face) {
+	x = int(float32(x) * ScaleFactor)
+	y = int(float32(y) * ScaleFactor)
+
+	d := &font.Drawer{
+		Dst:  screen,
+		Src:  image.NewUniform(clr),
+		Face: face,
+		Dot: fixed.Point26_6{
+			X: fixed.I(x),
+			Y: fixed.I(y),
+		},
+	}
+	d.DrawString(txt)
 }
 
-func DrawTextNoShift(screen *ebiten.Image, txt string, x, y int, clr color.Color, face font.Face, scaleFactor float32) {
-	x = int(float32(x) * scaleFactor)
-	y = int(float32(y) * scaleFactor)
-	text.Draw(screen, txt, face, x, y, clr)
-}
-
-func DrawScaledRect(screen *ebiten.Image, x, y, width, height int, color color.Color, scaleFactor float32) {
-	scaledX := float32(x) * scaleFactor
-	scaledY := float32(y) * scaleFactor
-	scaledWidth := float32(width) * scaleFactor
-	scaledHeight := float32(height) * scaleFactor
+func DrawScaledRect(screen *ebiten.Image, x, y, width, height int, color color.Color) {
+	scaledX := float32(x) * ScaleFactor
+	scaledY := float32(y) * ScaleFactor
+	scaledWidth := float32(width) * ScaleFactor
+	scaledHeight := float32(height) * ScaleFactor
 	vector.DrawFilledRect(screen, scaledX, scaledY, scaledWidth, scaledHeight, color, false)
 }
 
-func ScaledDim(val int, scaleFactor float32) int {
-	return int(float32(val) * scaleFactor)
+func ScaledDim(val int) int {
+	return int(float32(val) * ScaleFactor)
+}
+
+func PlayerCircleRadius(zoomLevel float64) float64 {
+	return (8 + 0.5*zoomLevel) * float64(ScaleFactor)
+}
+
+func PlayerIconSize(zoomLevel float64) float64 {
+	return (10 + 0.5*zoomLevel) * float64(ScaleFactor)
 }
 
 func TranslateCoords(sizeX, sizeY int, coords hll.Position) (float64, float64) {
@@ -55,12 +68,4 @@ func TranslateCoords(sizeX, sizeY int, coords hll.Position) (float64, float64) {
 	screenY := (float64(coords.Y) + 100000) * float64(sizeY) / 200000
 
 	return screenX, screenY
-}
-
-func PlayerCircleRadius(zoomLevel float64) float64 {
-	return float64(8 + 0.5*zoomLevel)
-}
-
-func PlayerIconSize(zoomLevel float64) float64 {
-	return 10 + 0.5*zoomLevel
 }

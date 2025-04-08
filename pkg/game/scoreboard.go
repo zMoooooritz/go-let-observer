@@ -18,13 +18,13 @@ func (g *Game) drawScoreboard(screen *ebiten.Image) {
 	scoreboardX := (screenWidth - scoreboardWidth) / 2
 	scoreboardY := (screenHeight - scoreboardHeight) / 2
 
-	util.DrawScaledRect(screen, scoreboardX, scoreboardY, scoreboardWidth, scoreboardHeight, CLR_OVERLAY, g.dim.scaleFactor)
+	util.DrawScaledRect(screen, scoreboardX, scoreboardY, scoreboardWidth, scoreboardHeight, CLR_OVERLAY)
 
 	// Display scoreboard.Title
 	textX := scoreboardX + 20
-	textY := scoreboardY + 20
+	textY := scoreboardY + 40
 	lineHeight := 30
-	util.DrawText(screen, "Scoreboard (Top 25 Players)", textX, textY, CLR_WHITE, g.fnt.Title, g.dim.scaleFactor)
+	util.DrawText(screen, "Scoreboard (Top 25 Players)", textX, textY, CLR_WHITE, g.fnt.Title)
 	textY += lineHeight
 
 	sortedPlayers := g.mapView.playerList
@@ -32,7 +32,7 @@ func (g *Game) drawScoreboard(screen *ebiten.Image) {
 		return sortedPlayers[i].Score.Combat > sortedPlayers[j].Score.Combat // TODO: sort by kills when data is present in data recv from server
 	})
 
-	util.DrawText(screen, formatScoreboardLine("Name", "Kills", "Deaths", "K/D", "Team", "Cbt", "Off", "Def", "Sup"), textX, textY, CLR_WHITE, g.fnt.Normal, g.dim.scaleFactor)
+	util.DrawText(screen, formatScoreboardLine("Name", "Kills", "Deaths", "K/D", "Team", "Cbt", "Off", "Def", "Sup"), textX, textY, CLR_WHITE, g.fnt.Normal)
 	textY += 25
 	for i, player := range sortedPlayers {
 		if i >= 25 {
@@ -46,7 +46,7 @@ func (g *Game) drawScoreboard(screen *ebiten.Image) {
 		}
 		playerInfo := formatScoreboardLine(player.Name, strconv.Itoa(player.Kills), strconv.Itoa(player.Deaths), kdStr, string(player.Team),
 			strconv.Itoa(player.Score.Combat), strconv.Itoa(player.Score.Offense), strconv.Itoa(player.Score.Defense), strconv.Itoa(player.Score.Support))
-		util.DrawText(screen, playerInfo, textX, textY, CLR_WHITE, g.fnt.Normal, g.dim.scaleFactor)
+		util.DrawText(screen, playerInfo, textX, textY, CLR_WHITE, g.fnt.Normal)
 		textY += 15
 	}
 }
