@@ -35,6 +35,26 @@ func LoadRoleImages() map[string]*ebiten.Image {
 	return roleImages
 }
 
+func LoadSpawnImages() map[string]*ebiten.Image {
+	spawnImages := make(map[string]*ebiten.Image)
+	spawnTypes := []string{"garrison", "outpost"}
+	for _, spawnType := range spawnTypes {
+		imgData, err := assets.Assets.ReadFile("spawns/" + spawnType + ".png")
+		if err != nil {
+			log.Printf("Error loading role image for %s: %v", spawnType, err)
+			continue
+		}
+
+		img, _, err := image.Decode(bytes.NewReader(imgData))
+		if err != nil {
+			log.Printf("Error loading role image for %s: %v", spawnType, err)
+			continue
+		}
+		spawnImages[spawnType] = ebiten.NewImageFromImage(img)
+	}
+	return spawnImages
+}
+
 func LoadMapImage(mapName string) (*ebiten.Image, error) {
 	imgData, err := assets.Assets.ReadFile("tacmaps/" + mapName + ".png")
 	if err != nil {

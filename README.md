@@ -80,6 +80,8 @@ Usage of go-let-observer:
 | `RightClick-Drag`    | Move the map view                  |
 | `MouseWheel`         | Zoom in/out on the map             |
 | `+` / `-`            | Increase/Decrease update interval  |
+| `P`                  | Toggle players                     |
+| `S`                  | Toggle guesstimated spawns         |
 | `G`                  | Toggle grid overlay                |
 | `H`                  | Toggle header overlay              |
 | `Tab`                | Show scoreboard                    |

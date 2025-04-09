@@ -30,7 +30,7 @@ func (g *Game) drawScoreboard(screen *ebiten.Image) {
 		return sortedPlayers[i].Score.Combat > sortedPlayers[j].Score.Combat // TODO: sort by kills when data is present in data recv from server
 	})
 
-	util.DrawText(screen, formatScoreboardLine("Name", "Kills", "Deaths", "K/D", "Lvl", "Cbt", "Off", "Def", "Sup"), textX, textY, CLR_WHITE, g.fnt.Small)
+	util.DrawText(screen, formatScoreboardLine("Rank", "Name", "Kills", "Deaths", "K/D", "Lvl", "Cbt", "Off", "Def", "Sup"), textX, textY, CLR_WHITE, g.fnt.Small)
 	textY += 25
 	for i, player := range sortedPlayers {
 		if i >= 25 {
@@ -42,13 +42,13 @@ func (g *Game) drawScoreboard(screen *ebiten.Image) {
 		} else {
 			kdStr = fmt.Sprintf("%.2f", float32(player.Kills))
 		}
-		playerInfo := formatScoreboardLine(player.Name, strconv.Itoa(player.Kills), strconv.Itoa(player.Deaths), kdStr, strconv.Itoa(player.Level),
+		playerInfo := formatScoreboardLine(strconv.Itoa(i+1), player.Name, strconv.Itoa(player.Kills), strconv.Itoa(player.Deaths), kdStr, strconv.Itoa(player.Level),
 			strconv.Itoa(player.Score.Combat), strconv.Itoa(player.Score.Offense), strconv.Itoa(player.Score.Defense), strconv.Itoa(player.Score.Support))
 		util.DrawText(screen, playerInfo, textX, textY, CLR_WHITE, g.fnt.Small)
 		textY += 15
 	}
 }
 
-func formatScoreboardLine(name, kills, deaths, kd, level, combat, offense, defense, support string) string {
-	return fmt.Sprintf("%5s  %-30s %7s %7s %5s %5s %5s %5s %5s", level, name, kills, deaths, kd, combat, offense, defense, support)
+func formatScoreboardLine(rank, name, kills, deaths, kd, level, combat, offense, defense, support string) string {
+	return fmt.Sprintf("%4s %5s  %-30s %7s %7s %5s %5s %5s %5s %5s", rank, level, name, kills, deaths, kd, combat, offense, defense, support)
 }

@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"image/color"
 	"sync"
 	"time"
@@ -63,6 +62,8 @@ type LoginView struct {
 type MapViewState struct {
 	showHeader        bool
 	showGrid          bool
+	showPlayers       bool
+	showSpawns        bool
 	showScoreboard    bool
 	initialDataLoaded bool
 	selectedPlayerID  string
@@ -92,6 +93,7 @@ type RconData struct {
 	playerMaxCount        int
 	playerMap             map[string]hll.DetailedPlayerInfo
 	playerList            []hll.DetailedPlayerInfo
+	spawnTracker          *SpawnTracker
 }
 
 type MapView struct {
@@ -99,7 +101,8 @@ type MapView struct {
 	CameraState
 	FetchState
 	RconData
-	roleImages map[string]*ebiten.Image
+	roleImages  map[string]*ebiten.Image
+	spawnImages map[string]*ebiten.Image
 }
 
 type Game struct {
@@ -115,7 +118,6 @@ type Game struct {
 
 func NewGame(size int, rcon *rconv2.Rcon) *Game {
 	util.ScaleFactor = float32(size) / float32(ROOT_SCALING_SIZE)
-	fmt.Println(util.ScaleFactor)
 
 	dim := ViewDimension{
 		sizeX: size,
@@ -124,8 +126,10 @@ func NewGame(size int, rcon *rconv2.Rcon) *Game {
 	loginView := &LoginView{}
 	mapView := &MapView{
 		MapViewState: MapViewState{
-			showHeader: true,
-			showGrid:   true,
+			showHeader:  false,
+			showGrid:    true,
+			showPlayers: true,
+			showSpawns:  false,
 		},
 		CameraState: CameraState{
 			zoomLevel: MIN_ZOOM_LEVEL,
@@ -133,7 +137,11 @@ func NewGame(size int, rcon *rconv2.Rcon) *Game {
 		FetchState: FetchState{
 			intervalIndex: 2,
 		},
-		roleImages: util.LoadRoleImages(),
+		RconData: RconData{
+			spawnTracker: NewSpawnTracker(),
+		},
+		roleImages:  util.LoadRoleImages(),
+		spawnImages: util.LoadSpawnImages(),
 	}
 	uiState := StateLogin
 	if rcon != nil {

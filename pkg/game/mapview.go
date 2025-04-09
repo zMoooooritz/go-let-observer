@@ -79,7 +79,13 @@ func (g *Game) drawMapView(screen *ebiten.Image) {
 		g.drawGrid(screen, screenSize.X, screenSize.Y)
 	}
 
-	g.drawPlayers(screen)
+	if g.mapView.showSpawns {
+		g.drawSpawns(screen)
+	}
+
+	if g.mapView.showPlayers {
+		g.drawPlayers(screen)
+	}
 }
 
 func (g *Game) drawPlayers(screen *ebiten.Image) {
@@ -112,7 +118,38 @@ func (g *Game) drawPlayers(screen *ebiten.Image) {
 			options.GeoM.Translate(x-targetSize/2, y-targetSize/2)
 			screen.DrawImage(roleImage, options)
 		}
+	}
+}
 
+func (g *Game) drawSpawns(screen *ebiten.Image) {
+	spawns := g.mapView.spawnTracker.GetSpawns()
+	for _, spawn := range spawns {
+		if spawn.spawnType == SpawnTypeNone {
+			continue
+		}
+
+		x, y := util.TranslateCoords(g.dim.sizeX, g.dim.sizeY, spawn.position)
+		x = x*g.mapView.zoomLevel + g.mapView.panX
+		y = y*g.mapView.zoomLevel + g.mapView.panY
+
+		clr := CLR_ALLIES
+		if spawn.team == hll.TmAxis {
+			clr = CLR_AXIS
+		}
+
+		rectSize := int(2 * util.PlayerCircleRadius(g.mapView.zoomLevel))
+		util.DrawScaledRect(screen, int(x)-rectSize/2, int(y)-rectSize/2, rectSize, rectSize, clr)
+
+		spawnImage, ok := g.mapView.spawnImages[string(spawn.spawnType)]
+		if ok {
+			targetSize := util.PlayerIconSize(g.mapView.zoomLevel)
+			iconScale := targetSize / float64(spawnImage.Bounds().Dx())
+
+			options := &ebiten.DrawImageOptions{}
+			options.GeoM.Scale(iconScale, iconScale)
+			options.GeoM.Translate(x-targetSize/2, y-targetSize/2)
+			screen.DrawImage(spawnImage, options)
+		}
 	}
 }
 
@@ -200,7 +237,7 @@ func (g *Game) handleMouseInput() {
 		g.mapView.panY = util.Clamp(g.mapView.panY, float64(g.dim.sizeY)*(MIN_ZOOM_LEVEL-g.mapView.zoomLevel), 0)
 	}
 
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+	if g.mapView.showPlayers && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		foundPlayer := false
 		mouseX, mouseY := ebiten.CursorPosition()
 		for _, player := range g.mapView.playerMap {
@@ -235,6 +272,15 @@ func (g *Game) handleKeyboardInput() {
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
 		g.mapView.showGrid = !g.mapView.showGrid
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		g.mapView.showPlayers = !g.mapView.showPlayers
+		g.mapView.selectedPlayerID = ""
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		g.mapView.showSpawns = !g.mapView.showSpawns
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {

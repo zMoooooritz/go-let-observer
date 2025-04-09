@@ -16,15 +16,21 @@ func (g *Game) fetchRconData() {
 		return
 	}
 
+	oldPlayerMap := g.mapView.playerMap
+
 	playerMap := map[string]hll.DetailedPlayerInfo{}
 	for _, player := range players {
 		playerMap[player.ID] = player
+		if oldPlayer, ok := oldPlayerMap[player.ID]; ok {
+			g.mapView.spawnTracker.TrackPlayerPosition(oldPlayer, player)
+		}
 	}
 	playerList := players
 	sort.Slice(playerList, func(i, j int) bool {
 		return playerList[i].ID > playerList[j].ID
 	})
 
+	g.mapView.spawnTracker.CleanExpiredSpawns()
 	g.mapView.playerMap = playerMap
 	g.mapView.playerList = playerList
 
