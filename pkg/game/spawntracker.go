@@ -37,13 +37,13 @@ type SpawnPoint struct {
 }
 
 type SpawnTracker struct {
-	Spawns []SpawnPoint
+	spawns []SpawnPoint
 	mu     sync.Mutex
 }
 
 func NewSpawnTracker() *SpawnTracker {
 	return &SpawnTracker{
-		Spawns: []SpawnPoint{},
+		spawns: []SpawnPoint{},
 	}
 }
 
@@ -57,19 +57,47 @@ func (st *SpawnTracker) TrackPlayerPosition(previousState, currentState hll.Deta
 	st.destroyNearbySpawns(currentState)
 }
 
+func (st *SpawnTracker) ResetSpawns() {
+	st.mu.Lock()
+	defer st.mu.Unlock()
+
+	st.spawns = []SpawnPoint{}
+}
+
+func (st *SpawnTracker) CleanExpiredSpawns() {
+	st.mu.Lock()
+	defer st.mu.Unlock()
+
+	active := []SpawnPoint{}
+	for _, spawn := range st.spawns {
+		if ttl, ok := spawnTTL[spawn.spawnType]; ok {
+			if time.Since(spawn.lastSeen) < ttl {
+				active = append(active, spawn)
+			}
+		}
+	}
+	st.spawns = active
+}
+
+func (st *SpawnTracker) GetSpawns() []SpawnPoint {
+	st.mu.Lock()
+	defer st.mu.Unlock()
+	return st.spawns
+}
+
 func hasJustSpawned(previous, current hll.DetailedPlayerInfo) bool {
 	return previous.ID == current.ID && !previous.IsSpawned() && current.IsSpawned()
 }
 
 func (st *SpawnTracker) destroyNearbySpawns(player hll.DetailedPlayerInfo) {
-	for i := len(st.Spawns) - 1; i >= 0; i-- {
-		spawn := &st.Spawns[i]
+	for i := len(st.spawns) - 1; i >= 0; i-- {
+		spawn := &st.spawns[i]
 		if spawn.team != player.Team {
 			if spawn.spawnType == SpawnTypeOutpost && player.PlanarDistanceTo(spawn.position) <= OUTPOST_DESTRUCTION_DISTANCE {
-				st.Spawns = append(st.Spawns[:i], st.Spawns[i+1:]...)
+				st.spawns = append(st.spawns[:i], st.spawns[i+1:]...)
 			}
 			if spawn.spawnType == SpawnTypeGarrison && player.PlanarDistanceTo(spawn.position) <= GARRISON_DESTRUCTION_DISTANCE {
-				st.Spawns = append(st.Spawns[:i], st.Spawns[i+1:]...)
+				st.spawns = append(st.spawns[:i], st.spawns[i+1:]...)
 			}
 		}
 	}
@@ -89,7 +117,7 @@ func (st *SpawnTracker) handlePlayerSpawn(player hll.DetailedPlayerInfo) {
 }
 
 func (st *SpawnTracker) isNearExistingSpawn(player hll.DetailedPlayerInfo) (int, bool) {
-	for i, spawn := range st.Spawns {
+	for i, spawn := range st.spawns {
 		if spawn.team == player.Team {
 			if player.PlanarDistanceTo(spawn.position) <= SPAWN_DISTANCE_DELTA {
 				return i, true
@@ -100,7 +128,7 @@ func (st *SpawnTracker) isNearExistingSpawn(player hll.DetailedPlayerInfo) (int,
 }
 
 func (st *SpawnTracker) updateSpawnPoint(index int, player hll.DetailedPlayerInfo) {
-	spawn := &st.Spawns[index]
+	spawn := &st.spawns[index]
 	spawn.lastSeen = time.Now()
 	spawn.spawnCount += 1
 
@@ -128,12 +156,12 @@ func (st *SpawnTracker) addNewSpawnPoint(player hll.DetailedPlayerInfo) {
 		usedBy:     usedBy,
 	}
 
-	st.Spawns = append(st.Spawns, spawn)
+	st.spawns = append(st.spawns, spawn)
 }
 
 func (st *SpawnTracker) analyzeSpawnTypes() {
-	for i := range st.Spawns {
-		spawn := &st.Spawns[i]
+	for i := range st.spawns {
+		spawn := &st.spawns[i]
 
 		if len(spawn.usedBy) > 1 {
 			spawn.spawnType = SpawnTypeGarrison
@@ -141,25 +169,4 @@ func (st *SpawnTracker) analyzeSpawnTypes() {
 			spawn.spawnType = SpawnTypeOutpost
 		}
 	}
-}
-
-func (st *SpawnTracker) CleanExpiredSpawns() {
-	st.mu.Lock()
-	defer st.mu.Unlock()
-
-	active := []SpawnPoint{}
-	for _, spawn := range st.Spawns {
-		if ttl, ok := spawnTTL[spawn.spawnType]; ok {
-			if time.Since(spawn.lastSeen) < ttl {
-				active = append(active, spawn)
-			}
-		}
-	}
-	st.Spawns = active
-}
-
-func (st *SpawnTracker) GetSpawns() []SpawnPoint {
-	st.mu.Lock()
-	defer st.mu.Unlock()
-	return st.Spawns
 }

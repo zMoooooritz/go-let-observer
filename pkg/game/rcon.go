@@ -42,6 +42,8 @@ func (g *Game) fetchRconData() {
 	currMapName := assets.ToFileName(currMap.ID)
 	g.mapView.currentMapOrientation = currMap.Orientation
 	if currMapName != g.mapView.currentMapName {
+		g.mapView.spawnTracker.ResetSpawns()
+		g.mapView.currentMapName = currMapName
 		img, err := util.LoadMapImage(currMapName)
 		if err == nil {
 			g.backgroundImage = img
