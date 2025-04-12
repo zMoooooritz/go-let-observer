@@ -19,15 +19,21 @@ const (
 	MIN_SCREEN_SIZE   = 500
 	ROOT_SCALING_SIZE = 1000
 	MAX_SCREEN_SIZE   = 2500
+
+	PLAYER_SIZE_MODIFIER          = 1.0
+	SELECTED_PLAYER_SIZE_MODIFIER = 1.1
+	SPAWN_SIZE_MODIFIER           = 1.2
 )
 
 var (
-	CLR_AXIS     = color.RGBA{255, 0, 0, 255}
-	CLR_ALLIES   = color.RGBA{0, 0, 255, 255}
-	CLR_SELECTED = color.RGBA{0, 255, 0, 255}
-	CLR_BLACK    = color.RGBA{0, 0, 0, 255}
-	CLR_WHITE    = color.RGBA{255, 255, 255, 255}
-	CLR_OVERLAY  = color.RGBA{0, 0, 0, 200}
+	CLR_AXIS         = color.RGBA{255, 0, 0, 255}
+	CLR_ALLIES       = color.RGBA{0, 0, 255, 255}
+	CLR_AXIS_SPAWN   = color.RGBA{180, 0, 30, 255}
+	CLR_ALLIES_SPAWN = color.RGBA{0, 0, 180, 255}
+	CLR_SELECTED     = color.RGBA{0, 255, 0, 255}
+	CLR_BLACK        = color.RGBA{0, 0, 0, 255}
+	CLR_WHITE        = color.RGBA{255, 255, 255, 255}
+	CLR_OVERLAY      = color.RGBA{0, 0, 0, 200}
 )
 
 type UIState int
@@ -63,6 +69,7 @@ type MapViewState struct {
 	showHeader        bool
 	showGrid          bool
 	showPlayers       bool
+	showPlayerInfo    bool
 	showSpawns        bool
 	showScoreboard    bool
 	initialDataLoaded bool
@@ -126,10 +133,11 @@ func NewGame(size int, rcon *rconv2.Rcon) *Game {
 	loginView := &LoginView{}
 	mapView := &MapView{
 		MapViewState: MapViewState{
-			showHeader:  false,
-			showGrid:    true,
-			showPlayers: true,
-			showSpawns:  false,
+			showHeader:     false,
+			showGrid:       true,
+			showPlayers:    true,
+			showPlayerInfo: true,
+			showSpawns:     false,
 		},
 		CameraState: CameraState{
 			zoomLevel: MIN_ZOOM_LEVEL,

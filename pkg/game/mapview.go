@@ -52,7 +52,7 @@ func (g *Game) drawMap(screen *ebiten.Image) {
 
 	if g.mapView.showScoreboard {
 		g.drawScoreboard(screen)
-	} else if g.mapView.selectedPlayerID != "" {
+	} else if g.mapView.showPlayerInfo && g.mapView.selectedPlayerID != "" {
 		if player, ok := g.mapView.playerMap[g.mapView.selectedPlayerID]; ok {
 			g.drawPlayerOverlay(screen, player)
 		}
@@ -89,36 +89,54 @@ func (g *Game) drawMapView(screen *ebiten.Image) {
 }
 
 func (g *Game) drawPlayers(screen *ebiten.Image) {
+	var selectedPlayer *hll.DetailedPlayerInfo
+
 	for _, player := range g.mapView.playerList {
 		if !player.IsSpawned() {
 			continue
 		}
 
-		x, y := util.TranslateCoords(g.dim.sizeX, g.dim.sizeY, player.Position)
-		x = x*g.mapView.zoomLevel + g.mapView.panX
-		y = y*g.mapView.zoomLevel + g.mapView.panY
-
-		clr := CLR_ALLIES
-		if player.Team == hll.TmAxis {
-			clr = CLR_AXIS
-		}
-		if player.ID == g.mapView.selectedPlayerID {
-			clr = CLR_SELECTED
+		if g.mapView.selectedPlayerID != "" && player.ID == g.mapView.selectedPlayerID {
+			selectedPlayer = &player
+			continue
 		}
 
-		vector.DrawFilledCircle(screen, float32(x), float32(y), float32(util.PlayerCircleRadius(g.mapView.zoomLevel)), clr, false)
-
-		roleImage, ok := g.mapView.roleImages[strings.ToLower(string(player.Role))]
-		if ok {
-			targetSize := util.PlayerIconSize(g.mapView.zoomLevel)
-			iconScale := targetSize / float64(roleImage.Bounds().Dx())
-
-			options := &ebiten.DrawImageOptions{}
-			options.GeoM.Scale(iconScale, iconScale)
-			options.GeoM.Translate(x-targetSize/2, y-targetSize/2)
-			screen.DrawImage(roleImage, options)
-		}
+		g.drawPlayer(screen, player)
 	}
+
+	if selectedPlayer != nil {
+		g.drawPlayer(screen, *selectedPlayer)
+	}
+}
+
+func (g *Game) drawPlayer(screen *ebiten.Image, player hll.DetailedPlayerInfo) {
+	x, y := util.TranslateCoords(g.dim.sizeX, g.dim.sizeY, player.Position)
+	x = x*g.mapView.zoomLevel + g.mapView.panX
+	y = y*g.mapView.zoomLevel + g.mapView.panY
+
+	sizeModifier := PLAYER_SIZE_MODIFIER
+	clr := CLR_ALLIES
+	if player.Team == hll.TmAxis {
+		clr = CLR_AXIS
+	}
+	if g.mapView.selectedPlayerID == player.ID {
+		sizeModifier = SELECTED_PLAYER_SIZE_MODIFIER
+		clr = CLR_SELECTED
+	}
+
+	vector.DrawFilledCircle(screen, float32(x), float32(y), float32(util.IconCircleRadius(g.mapView.zoomLevel, sizeModifier)), clr, false)
+
+	roleImage, ok := g.mapView.roleImages[strings.ToLower(string(player.Role))]
+	if ok {
+		targetSize := util.IconSize(g.mapView.zoomLevel, sizeModifier)
+		iconScale := targetSize / float64(roleImage.Bounds().Dx())
+
+		options := &ebiten.DrawImageOptions{}
+		options.GeoM.Scale(iconScale, iconScale)
+		options.GeoM.Translate(x-targetSize/2, y-targetSize/2)
+		screen.DrawImage(roleImage, options)
+	}
+
 }
 
 func (g *Game) drawSpawns(screen *ebiten.Image) {
@@ -132,17 +150,17 @@ func (g *Game) drawSpawns(screen *ebiten.Image) {
 		x = x*g.mapView.zoomLevel + g.mapView.panX
 		y = y*g.mapView.zoomLevel + g.mapView.panY
 
-		clr := CLR_ALLIES
+		clr := CLR_ALLIES_SPAWN
 		if spawn.team == hll.TmAxis {
-			clr = CLR_AXIS
+			clr = CLR_AXIS_SPAWN
 		}
 
-		rectSize := int(2 * util.PlayerCircleRadius(g.mapView.zoomLevel))
+		rectSize := int(2 * util.IconCircleRadius(g.mapView.zoomLevel, SPAWN_SIZE_MODIFIER))
 		util.DrawScaledRect(screen, int(x)-rectSize/2, int(y)-rectSize/2, rectSize, rectSize, clr)
 
 		spawnImage, ok := g.mapView.spawnImages[string(spawn.spawnType)]
 		if ok {
-			targetSize := util.PlayerIconSize(g.mapView.zoomLevel)
+			targetSize := util.IconSize(g.mapView.zoomLevel, SPAWN_SIZE_MODIFIER)
 			iconScale := targetSize / float64(spawnImage.Bounds().Dx())
 
 			options := &ebiten.DrawImageOptions{}
@@ -249,7 +267,7 @@ func (g *Game) handleMouseInput() {
 			x = x*g.mapView.zoomLevel + g.mapView.panX
 			y = y*g.mapView.zoomLevel + g.mapView.panY
 
-			radius := util.PlayerCircleRadius(g.mapView.zoomLevel)
+			radius := util.IconCircleRadius(g.mapView.zoomLevel, PLAYER_SIZE_MODIFIER)
 			if (float64(mouseX)-x)*(float64(mouseX)-x)+(float64(mouseY)-y)*(float64(mouseY)-y) <= radius*radius {
 				g.mapView.selectedPlayerID = player.ID
 				foundPlayer = true
@@ -277,6 +295,10 @@ func (g *Game) handleKeyboardInput() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
 		g.mapView.showPlayers = !g.mapView.showPlayers
 		g.mapView.selectedPlayerID = ""
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyI) {
+		g.mapView.showPlayerInfo = !g.mapView.showPlayerInfo
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyS) {

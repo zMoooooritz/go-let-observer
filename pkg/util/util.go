@@ -53,12 +53,12 @@ func ScaledDim(val int) int {
 	return int(float32(val) * ScaleFactor)
 }
 
-func PlayerCircleRadius(zoomLevel float64) float64 {
-	return (8 + 0.5*zoomLevel) * float64(ScaleFactor)
+func IconCircleRadius(zoomLevel float64, sizeModifier float64) float64 {
+	return (8 + 0.5*zoomLevel) * float64(ScaleFactor) * sizeModifier
 }
 
-func PlayerIconSize(zoomLevel float64) float64 {
-	return (10 + 0.5*zoomLevel) * float64(ScaleFactor)
+func IconSize(zoomLevel float64, sizeModifier float64) float64 {
+	return (10 + 0.5*zoomLevel) * float64(ScaleFactor) * sizeModifier
 }
 
 func TranslateCoords(sizeX, sizeY int, coords hll.Position) (float64, float64) {

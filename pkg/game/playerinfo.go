@@ -17,7 +17,7 @@ func (g *Game) drawPlayerOverlay(screen *ebiten.Image, player hll.DetailedPlayer
 
 	// Display player information
 	textX := overlayX + 10
-	textY := 80
+	textY := 30
 	lineHeight := 20
 	dividerHeight := 30
 
