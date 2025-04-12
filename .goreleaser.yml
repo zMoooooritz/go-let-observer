@@ -16,7 +16,6 @@ builds:
       -s -w
       -X main.Version={{ .Version }}
       -X main.CommitSHA={{ .Commit }}
-      -X main.Date={{ .Date }}
     goos:
       - linux
     goarch:
@@ -32,7 +31,6 @@ builds:
       -s -w
       -X main.Version={{ .Version }}
       -X main.CommitSHA={{ .Commit }}
-      -X main.Date={{ .Date }}
       -H=windowsgui
     goos:
       - windows

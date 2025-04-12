@@ -14,11 +14,14 @@ import (
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
+const (
+	RCON_WORKER_COUNT = 5
+)
+
 var (
 	// values set via ldflags
 	Version   = ""
 	CommitSHA = ""
-	Date      = ""
 
 	host     = flag.String("host", "", "RCON server host")
 	port     = flag.String("port", "", "RCON server port")
@@ -57,7 +60,7 @@ func main() {
 
 		// Attempt to connect with the provided credentials
 		var err error
-		rcon, err = rconv2.NewRcon(cfg, 3)
+		rcon, err = rconv2.NewRcon(cfg, RCON_WORKER_COUNT)
 		if err != nil {
 			log.Fatal("Invalid CLI credentials or connection error")
 		}
