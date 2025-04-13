@@ -1,134 +1,265 @@
-package game
+package ui
 
 import (
 	"image/color"
+	"log"
+	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
+	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
+	"github.com/zMoooooritz/go-let-observer/assets"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
-func (g *Game) updateMap() error {
+var fetchIntervalSteps = []time.Duration{
+	100 * time.Millisecond,
+	500 * time.Millisecond,
+	time.Second,
+	2 * time.Second,
+	5 * time.Second,
+	10 * time.Second,
+}
+
+type MapViewState struct {
+	showHeader        bool
+	showGrid          bool
+	showPlayers       bool
+	showPlayerInfo    bool
+	showSpawns        bool
+	showScoreboard    bool
+	initialDataLoaded bool
+	selectedPlayerID  string
+}
+
+type CameraState struct {
+	panX       float64
+	panY       float64
+	zoomLevel  float64
+	isDragging bool
+	lastMouseX int
+	lastMouseY int
+}
+
+type FetchState struct {
+	intervalIndex  int
+	lastUpdateTime time.Time
+	isFetching     bool
+	fetchMutex     sync.Mutex
+}
+
+type RconData struct {
+	currentMapName        string
+	currentMapOrientation hll.Orientation
+	serverName            string
+	playerCurrCount       int
+	playerMaxCount        int
+	playerMap             map[string]hll.DetailedPlayerInfo
+	playerList            []hll.DetailedPlayerInfo
+	spawnTracker          *SpawnTracker
+}
+
+type MapView struct {
+	MapViewState
+	CameraState
+	FetchState
+	RconData
+	roleImages  map[string]*ebiten.Image
+	spawnImages map[string]*ebiten.Image
+
+	backgroundImage *ebiten.Image
+	rcon            *rconv2.Rcon
+	getDims         func() (int, int)
+}
+
+func NewMapView(rcon *rconv2.Rcon, getDims func() (int, int)) *MapView {
+	return &MapView{
+		MapViewState: MapViewState{
+			showHeader:     false,
+			showGrid:       true,
+			showPlayers:    true,
+			showPlayerInfo: true,
+			showSpawns:     false,
+		},
+		CameraState: CameraState{
+			zoomLevel: MIN_ZOOM_LEVEL,
+		},
+		FetchState: FetchState{
+			intervalIndex: INITIAL_FETCH_STEP,
+		},
+		RconData: RconData{
+			spawnTracker: NewSpawnTracker(),
+		},
+		roleImages:  util.LoadRoleImages(),
+		spawnImages: util.LoadSpawnImages(),
+		rcon:        rcon,
+		getDims:     getDims,
+	}
+}
+
+func (mv *MapView) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyQ) {
 		return ebiten.Termination
 	}
 
-	if time.Since(g.mapView.lastUpdateTime) >= fetchIntervalSteps[g.mapView.intervalIndex] {
-		g.mapView.fetchMutex.Lock()
-		if !g.mapView.isFetching {
-			g.mapView.isFetching = true
+	if time.Since(mv.lastUpdateTime) >= fetchIntervalSteps[mv.intervalIndex] {
+		mv.fetchMutex.Lock()
+		if !mv.isFetching {
+			mv.isFetching = true
 			go func() {
-				g.fetchRconData()
-				g.mapView.fetchMutex.Lock()
-				g.mapView.isFetching = false
-				g.mapView.fetchMutex.Unlock()
+				snapshot, err := fetchRconDataSnapshot(mv.rcon)
+				if err == nil {
+					mv.processRconData(snapshot)
+				}
+				mv.fetchMutex.Lock()
+				mv.isFetching = false
+				mv.fetchMutex.Unlock()
 			}()
 		}
-		g.mapView.fetchMutex.Unlock()
+		mv.fetchMutex.Unlock()
 	}
 
-	g.handleKeyboardInput()
-	g.handleMouseInput()
+	mv.handleKeyboardInput()
+	mv.handleMouseInput()
 
 	return nil
 }
 
-func (g *Game) drawMap(screen *ebiten.Image) {
-	g.drawBackground(screen)
+func (mv *MapView) Draw(screen *ebiten.Image) {
+	mv.drawBackground(screen)
 
-	if !g.mapView.initialDataLoaded {
+	if !mv.initialDataLoaded {
 		return
 	}
 
-	g.drawMapView(screen)
+	mv.drawMapView(screen)
 
-	if g.mapView.showHeader {
-		g.drawHeader(screen)
+	if mv.showHeader {
+		mv.drawHeader(screen)
 	}
 
-	if g.mapView.showScoreboard {
-		g.drawScoreboard(screen)
-	} else if g.mapView.showPlayerInfo && g.mapView.selectedPlayerID != "" {
-		if player, ok := g.mapView.playerMap[g.mapView.selectedPlayerID]; ok {
-			g.drawPlayerOverlay(screen, player)
+	if mv.showScoreboard {
+		mv.drawScoreboard(screen)
+	} else if mv.showPlayerInfo && mv.selectedPlayerID != "" {
+		if player, ok := mv.playerMap[mv.selectedPlayerID]; ok {
+			mv.drawPlayerOverlay(screen, player)
 		}
 	}
 }
 
-func (g *Game) drawBackground(screen *ebiten.Image) {
-	if g.backgroundImage != nil {
+func (mv *MapView) processRconData(snapshot *RconDataSnapshot) {
+	oldPlayerMap := mv.playerMap
+	playerMap := map[string]hll.DetailedPlayerInfo{}
+	for _, player := range snapshot.Players {
+		playerMap[player.ID] = player
+		if oldPlayer, ok := oldPlayerMap[player.ID]; ok {
+			mv.spawnTracker.TrackPlayerPosition(oldPlayer, player)
+		}
+	}
+	sort.Slice(snapshot.Players, func(i, j int) bool {
+		return snapshot.Players[i].ID > snapshot.Players[j].ID
+	})
+	mv.spawnTracker.CleanExpiredSpawns()
+	mv.playerMap = playerMap
+	mv.playerList = snapshot.Players
+
+	currMapName := assets.ToFileName(snapshot.CurrentMap.ID)
+	mv.currentMapOrientation = snapshot.CurrentMap.Orientation
+	if currMapName != mv.currentMapName {
+		mv.spawnTracker.ResetSpawns()
+		mv.currentMapName = currMapName
+		img, err := util.LoadMapImage(currMapName)
+		if err == nil {
+			mv.backgroundImage = img
+		} else {
+			log.Println("Error loading background image:", err)
+		}
+	}
+
+	mv.serverName = snapshot.SessionInfo.ServerName
+	mv.playerCurrCount = snapshot.SessionInfo.PlayerCount
+	mv.playerMaxCount = snapshot.SessionInfo.MaxPlayerCount
+
+	mv.lastUpdateTime = snapshot.FetchTime
+	mv.initialDataLoaded = true
+}
+
+func (mv *MapView) drawBackground(screen *ebiten.Image) {
+	if mv.backgroundImage != nil {
 		screenSize := screen.Bounds().Size()
-		imageSize := g.backgroundImage.Bounds().Size()
-		scale := (float64(screenSize.X) / float64(imageSize.X)) * g.mapView.zoomLevel
+		imageSize := mv.backgroundImage.Bounds().Size()
+		scale := (float64(screenSize.X) / float64(imageSize.X)) * mv.zoomLevel
 
 		options := &ebiten.DrawImageOptions{}
 		options.GeoM.Scale(scale, scale)
-		options.GeoM.Translate(g.mapView.panX, g.mapView.panY)
-		screen.DrawImage(g.backgroundImage, options)
+		options.GeoM.Translate(mv.panX, mv.panY)
+		screen.DrawImage(mv.backgroundImage, options)
 	}
 }
 
-func (g *Game) drawMapView(screen *ebiten.Image) {
+func (mv *MapView) drawMapView(screen *ebiten.Image) {
 	screenSize := screen.Bounds().Size()
 
-	if g.mapView.showGrid {
-		g.drawGrid(screen, screenSize.X, screenSize.Y)
+	if mv.showGrid {
+		mv.drawGrid(screen, screenSize.X, screenSize.Y)
 	}
 
-	if g.mapView.showSpawns {
-		g.drawSpawns(screen)
+	if mv.showSpawns {
+		mv.drawSpawns(screen)
 	}
 
-	if g.mapView.showPlayers {
-		g.drawPlayers(screen)
+	if mv.showPlayers {
+		mv.drawPlayers(screen)
 	}
 }
 
-func (g *Game) drawPlayers(screen *ebiten.Image) {
+func (mv *MapView) drawPlayers(screen *ebiten.Image) {
 	var selectedPlayer *hll.DetailedPlayerInfo
 
-	for _, player := range g.mapView.playerList {
+	for _, player := range mv.playerList {
 		if !player.IsSpawned() {
 			continue
 		}
 
-		if g.mapView.selectedPlayerID != "" && player.ID == g.mapView.selectedPlayerID {
+		if mv.selectedPlayerID != "" && player.ID == mv.selectedPlayerID {
 			selectedPlayer = &player
 			continue
 		}
 
-		g.drawPlayer(screen, player)
+		mv.drawPlayer(screen, player)
 	}
 
 	if selectedPlayer != nil {
-		g.drawPlayer(screen, *selectedPlayer)
+		mv.drawPlayer(screen, *selectedPlayer)
 	}
 }
 
-func (g *Game) drawPlayer(screen *ebiten.Image, player hll.DetailedPlayerInfo) {
-	x, y := util.TranslateCoords(g.dim.sizeX, g.dim.sizeY, player.Position)
-	x = x*g.mapView.zoomLevel + g.mapView.panX
-	y = y*g.mapView.zoomLevel + g.mapView.panY
+func (mv *MapView) drawPlayer(screen *ebiten.Image, player hll.DetailedPlayerInfo) {
+	sizeX, sizeY := mv.getDims()
+	x, y := util.TranslateCoords(sizeX, sizeY, player.Position)
+	x = x*mv.zoomLevel + mv.panX
+	y = y*mv.zoomLevel + mv.panY
 
 	sizeModifier := PLAYER_SIZE_MODIFIER
 	clr := CLR_ALLIES
 	if player.Team == hll.TmAxis {
 		clr = CLR_AXIS
 	}
-	if g.mapView.selectedPlayerID == player.ID {
+	if mv.selectedPlayerID == player.ID {
 		sizeModifier = SELECTED_PLAYER_SIZE_MODIFIER
 		clr = CLR_SELECTED
 	}
 
-	vector.DrawFilledCircle(screen, float32(x), float32(y), float32(util.IconCircleRadius(g.mapView.zoomLevel, sizeModifier)), clr, false)
+	vector.DrawFilledCircle(screen, float32(x), float32(y), float32(util.IconCircleRadius(mv.zoomLevel, sizeModifier)), clr, false)
 
-	roleImage, ok := g.mapView.roleImages[strings.ToLower(string(player.Role))]
+	roleImage, ok := mv.roleImages[strings.ToLower(string(player.Role))]
 	if ok {
-		targetSize := util.IconSize(g.mapView.zoomLevel, sizeModifier)
+		targetSize := util.IconSize(mv.zoomLevel, sizeModifier)
 		iconScale := targetSize / float64(roleImage.Bounds().Dx())
 
 		options := &ebiten.DrawImageOptions{}
@@ -139,28 +270,29 @@ func (g *Game) drawPlayer(screen *ebiten.Image, player hll.DetailedPlayerInfo) {
 
 }
 
-func (g *Game) drawSpawns(screen *ebiten.Image) {
-	spawns := g.mapView.spawnTracker.GetSpawns()
+func (mv *MapView) drawSpawns(screen *ebiten.Image) {
+	sizeX, sizeY := mv.getDims()
+	spawns := mv.spawnTracker.GetSpawns()
 	for _, spawn := range spawns {
 		if spawn.spawnType == SpawnTypeNone {
 			continue
 		}
 
-		x, y := util.TranslateCoords(g.dim.sizeX, g.dim.sizeY, spawn.position)
-		x = x*g.mapView.zoomLevel + g.mapView.panX
-		y = y*g.mapView.zoomLevel + g.mapView.panY
+		x, y := util.TranslateCoords(sizeX, sizeY, spawn.position)
+		x = x*mv.zoomLevel + mv.panX
+		y = y*mv.zoomLevel + mv.panY
 
 		clr := CLR_ALLIES_SPAWN
 		if spawn.team == hll.TmAxis {
 			clr = CLR_AXIS_SPAWN
 		}
 
-		rectSize := int(2 * util.IconCircleRadius(g.mapView.zoomLevel, SPAWN_SIZE_MODIFIER))
+		rectSize := int(2 * util.IconCircleRadius(mv.zoomLevel, SPAWN_SIZE_MODIFIER))
 		util.DrawScaledRect(screen, int(x)-rectSize/2, int(y)-rectSize/2, rectSize, rectSize, clr)
 
-		spawnImage, ok := g.mapView.spawnImages[string(spawn.spawnType)]
+		spawnImage, ok := mv.spawnImages[string(spawn.spawnType)]
 		if ok {
-			targetSize := util.IconSize(g.mapView.zoomLevel, SPAWN_SIZE_MODIFIER)
+			targetSize := util.IconSize(mv.zoomLevel, SPAWN_SIZE_MODIFIER)
 			iconScale := targetSize / float64(spawnImage.Bounds().Dx())
 
 			options := &ebiten.DrawImageOptions{}
@@ -171,9 +303,10 @@ func (g *Game) drawSpawns(screen *ebiten.Image) {
 	}
 }
 
-func (g *Game) drawGrid(screen *ebiten.Image, width, height int) {
-	bgWidth := float64(g.dim.sizeX) * g.mapView.zoomLevel
-	bgHeight := float64(g.dim.sizeY) * g.mapView.zoomLevel
+func (mv *MapView) drawGrid(screen *ebiten.Image, width, height int) {
+	sizeX, sizeY := mv.getDims()
+	bgWidth := float64(sizeX) * mv.zoomLevel
+	bgHeight := float64(sizeY) * mv.zoomLevel
 
 	cellWidth := bgWidth / 5
 	cellHeight := bgHeight / 5
@@ -185,10 +318,10 @@ func (g *Game) drawGrid(screen *ebiten.Image, width, height int) {
 
 	for i := 0; i < 5; i++ {
 		for j := 0; j < 5; j++ {
-			x := float64(i)*cellWidth + g.mapView.panX
-			y := float64(j)*cellHeight + g.mapView.panY
+			x := float64(i)*cellWidth + mv.panX
+			y := float64(j)*cellHeight + mv.panY
 
-			if g.mapView.currentMapOrientation == hll.OriHorizontal {
+			if mv.currentMapOrientation == hll.OriHorizontal {
 				if j == 0 || j == 4 {
 					continue
 				}
@@ -198,7 +331,7 @@ func (g *Game) drawGrid(screen *ebiten.Image, width, height int) {
 				}
 			}
 
-			if g.mapView.currentMapOrientation == hll.OriVertical {
+			if mv.currentMapOrientation == hll.OriVertical {
 				if i == 0 || i == 4 {
 					continue
 				}
@@ -216,108 +349,109 @@ func (g *Game) drawGrid(screen *ebiten.Image, width, height int) {
 	}
 }
 
-func (g *Game) handleMouseInput() {
+func (mv *MapView) handleMouseInput() {
+	sizeX, sizeY := mv.getDims()
 	mouseX, mouseY := ebiten.CursorPosition()
 	_, wheelY := ebiten.Wheel()
 	if wheelY != 0 {
-		oldZoom := g.mapView.zoomLevel
-		g.mapView.zoomLevel += float64(wheelY * ZOOM_STEP_MULTIPLIER)
-		if g.mapView.zoomLevel < MIN_ZOOM_LEVEL {
-			g.mapView.zoomLevel = MIN_ZOOM_LEVEL
-		} else if g.mapView.zoomLevel > MAX_ZOOM_LEVEL {
-			g.mapView.zoomLevel = MAX_ZOOM_LEVEL
+		oldZoom := mv.zoomLevel
+		mv.zoomLevel += float64(wheelY * ZOOM_STEP_MULTIPLIER)
+		if mv.zoomLevel < MIN_ZOOM_LEVEL {
+			mv.zoomLevel = MIN_ZOOM_LEVEL
+		} else if mv.zoomLevel > MAX_ZOOM_LEVEL {
+			mv.zoomLevel = MAX_ZOOM_LEVEL
 		}
 
-		mouseWorldX := (float64(mouseX) - g.mapView.panX) / oldZoom
-		mouseWorldY := (float64(mouseY) - g.mapView.panY) / oldZoom
-		g.mapView.panX -= mouseWorldX * (g.mapView.zoomLevel - oldZoom)
-		g.mapView.panY -= mouseWorldY * (g.mapView.zoomLevel - oldZoom)
+		mouseWorldX := (float64(mouseX) - mv.panX) / oldZoom
+		mouseWorldY := (float64(mouseY) - mv.panY) / oldZoom
+		mv.panX -= mouseWorldX * (mv.zoomLevel - oldZoom)
+		mv.panY -= mouseWorldY * (mv.zoomLevel - oldZoom)
 	}
 
-	if g.mapView.zoomLevel == MIN_ZOOM_LEVEL {
-		g.mapView.panX = 0
-		g.mapView.panY = 0
+	if mv.zoomLevel == MIN_ZOOM_LEVEL {
+		mv.panX = 0
+		mv.panY = 0
 	} else {
 		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 			x, y := ebiten.CursorPosition()
-			if g.mapView.isDragging {
-				g.mapView.panX += float64(x - g.mapView.lastMouseX)
-				g.mapView.panY += float64(y - g.mapView.lastMouseY)
+			if mv.isDragging {
+				mv.panX += float64(x - mv.lastMouseX)
+				mv.panY += float64(y - mv.lastMouseY)
 			}
-			g.mapView.lastMouseX = x
-			g.mapView.lastMouseY = y
-			g.mapView.isDragging = true
+			mv.lastMouseX = x
+			mv.lastMouseY = y
+			mv.isDragging = true
 		} else {
-			g.mapView.isDragging = false
+			mv.isDragging = false
 		}
 
-		g.mapView.panX = util.Clamp(g.mapView.panX, float64(g.dim.sizeX)*(MIN_ZOOM_LEVEL-g.mapView.zoomLevel), 0)
-		g.mapView.panY = util.Clamp(g.mapView.panY, float64(g.dim.sizeY)*(MIN_ZOOM_LEVEL-g.mapView.zoomLevel), 0)
+		mv.panX = util.Clamp(mv.panX, float64(sizeX)*(MIN_ZOOM_LEVEL-mv.zoomLevel), 0)
+		mv.panY = util.Clamp(mv.panY, float64(sizeY)*(MIN_ZOOM_LEVEL-mv.zoomLevel), 0)
 	}
 
-	if g.mapView.showPlayers && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+	if mv.showPlayers && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		foundPlayer := false
 		mouseX, mouseY := ebiten.CursorPosition()
-		for _, player := range g.mapView.playerMap {
+		for _, player := range mv.playerMap {
 			if !player.IsSpawned() {
 				continue
 			}
 
-			x, y := util.TranslateCoords(g.dim.sizeX, g.dim.sizeY, player.Position)
-			x = x*g.mapView.zoomLevel + g.mapView.panX
-			y = y*g.mapView.zoomLevel + g.mapView.panY
+			x, y := util.TranslateCoords(sizeX, sizeY, player.Position)
+			x = x*mv.zoomLevel + mv.panX
+			y = y*mv.zoomLevel + mv.panY
 
-			radius := util.IconCircleRadius(g.mapView.zoomLevel, PLAYER_SIZE_MODIFIER)
+			radius := util.IconCircleRadius(mv.zoomLevel, PLAYER_SIZE_MODIFIER)
 			if (float64(mouseX)-x)*(float64(mouseX)-x)+(float64(mouseY)-y)*(float64(mouseY)-y) <= radius*radius {
-				g.mapView.selectedPlayerID = player.ID
+				mv.selectedPlayerID = player.ID
 				foundPlayer = true
 				break
 			}
 		}
 		if !foundPlayer {
-			g.mapView.selectedPlayerID = ""
+			mv.selectedPlayerID = ""
 		}
 	}
 }
 
-func (g *Game) handleKeyboardInput() {
+func (mv *MapView) handleKeyboardInput() {
 	if ebiten.IsKeyPressed(ebiten.KeyTab) {
-		g.mapView.showScoreboard = true
-		g.mapView.selectedPlayerID = ""
+		mv.showScoreboard = true
+		mv.selectedPlayerID = ""
 	} else {
-		g.mapView.showScoreboard = false
+		mv.showScoreboard = false
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
-		g.mapView.showGrid = !g.mapView.showGrid
+		mv.showGrid = !mv.showGrid
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
-		g.mapView.showPlayers = !g.mapView.showPlayers
-		g.mapView.selectedPlayerID = ""
+		mv.showPlayers = !mv.showPlayers
+		mv.selectedPlayerID = ""
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyI) {
-		g.mapView.showPlayerInfo = !g.mapView.showPlayerInfo
+		mv.showPlayerInfo = !mv.showPlayerInfo
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
-		g.mapView.showSpawns = !g.mapView.showSpawns
+		mv.showSpawns = !mv.showSpawns
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
-		g.mapView.showHeader = !g.mapView.showHeader
+		mv.showHeader = !mv.showHeader
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyNumpadAdd) || inpututil.IsKeyJustPressed(ebiten.KeyRightBracket) {
-		if g.mapView.intervalIndex < len(fetchIntervalSteps)-1 {
-			g.mapView.intervalIndex += 1
+		if mv.intervalIndex < len(fetchIntervalSteps)-1 {
+			mv.intervalIndex += 1
 		}
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyNumpadSubtract) || inpututil.IsKeyJustPressed(ebiten.KeySlash) {
-		if g.mapView.intervalIndex > 0 {
-			g.mapView.intervalIndex -= 1
+		if mv.intervalIndex > 0 {
+			mv.intervalIndex -= 1
 		}
 	}
 }

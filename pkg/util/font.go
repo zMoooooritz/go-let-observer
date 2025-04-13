@@ -8,7 +8,11 @@ import (
 	"golang.org/x/image/font/opentype"
 )
 
-type Font struct {
+var (
+	Font Fonts
+)
+
+type Fonts struct {
 	Title  font.Face
 	Normal font.Face
 	Small  font.Face
@@ -18,9 +22,7 @@ func scaledFontSize(fontSize int, screenSize int) float64 {
 	return float64(fontSize) * float64(screenSize) / 1000
 }
 
-func LoadFonts(screenSize int) Font {
-	fnt := Font{}
-
+func InitializeFonts(screenSize int) {
 	fontData, err := assets.Assets.ReadFile("fonts/RobotoMono-Regular.ttf")
 	if err != nil {
 		log.Fatalf("failed to load font: %v", err)
@@ -39,7 +41,7 @@ func LoadFonts(screenSize int) Font {
 	if err != nil {
 		log.Fatalf("failed to create small font: %v", err)
 	}
-	fnt.Small = smallFont
+	Font.Small = smallFont
 
 	normalFont, err := opentype.NewFace(tt, &opentype.FaceOptions{
 		Size:    scaledFontSize(18, screenSize),
@@ -49,7 +51,7 @@ func LoadFonts(screenSize int) Font {
 	if err != nil {
 		log.Fatalf("failed to create normal font: %v", err)
 	}
-	fnt.Normal = normalFont
+	Font.Normal = normalFont
 
 	titleFont, err := opentype.NewFace(tt, &opentype.FaceOptions{
 		Size:    scaledFontSize(24, screenSize),
@@ -59,7 +61,5 @@ func LoadFonts(screenSize int) Font {
 	if err != nil {
 		log.Fatalf("failed to create title font: %v", err)
 	}
-	fnt.Title = titleFont
-
-	return fnt
+	Font.Title = titleFont
 }

@@ -10,12 +10,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
-	"github.com/zMoooooritz/go-let-observer/pkg/game"
+	ui "github.com/zMoooooritz/go-let-observer/pkg/game"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
-)
-
-const (
-	RCON_WORKER_COUNT = 5
 )
 
 var (
@@ -26,7 +22,7 @@ var (
 	host     = flag.String("host", "", "RCON server host")
 	port     = flag.String("port", "", "RCON server port")
 	password = flag.String("password", "", "RCON server password")
-	size     = flag.Int("size", game.ROOT_SCALING_SIZE, "Screen size")
+	size     = flag.Int("size", ui.ROOT_SCALING_SIZE, "Screen size")
 	version  = flag.Bool("version", false, "Display version")
 )
 
@@ -60,17 +56,18 @@ func main() {
 
 		// Attempt to connect with the provided credentials
 		var err error
-		rcon, err = rconv2.NewRcon(cfg, RCON_WORKER_COUNT)
+		rcon, err = rconv2.NewRcon(cfg, ui.RCON_WORKER_COUNT)
 		if err != nil {
 			log.Fatal("Invalid CLI credentials or connection error")
 		}
 	}
-	size := util.Clamp(*size, game.MIN_SCREEN_SIZE, game.MAX_SCREEN_SIZE)
-	gm := game.NewGame(size, rcon)
+	size := util.Clamp(*size, ui.MIN_SCREEN_SIZE, ui.MAX_SCREEN_SIZE)
+	util.InitializeFonts(size)
+	userInterface := ui.NewUI(size, rcon)
 
 	ebiten.SetWindowSize(size, size)
 	ebiten.SetWindowTitle("HLL Observer")
-	if err := ebiten.RunGame(gm); err != nil {
+	if err := ebiten.RunGame(userInterface); err != nil {
 		log.Fatal(err)
 	}
 }

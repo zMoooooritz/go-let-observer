@@ -1,4 +1,4 @@
-package game
+package ui
 
 import (
 	"fmt"
@@ -7,12 +7,12 @@ import (
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
-func (g *Game) drawHeader(screen *ebiten.Image) {
-	g.drawServerName(screen)
-	g.drawPlayerCount(screen)
+func (mv *MapView) drawHeader(screen *ebiten.Image) {
+	mv.drawServerName(screen)
+	mv.drawPlayerCount(screen)
 }
 
-func (g *Game) drawServerName(screen *ebiten.Image) {
+func (mv *MapView) drawServerName(screen *ebiten.Image) {
 	overlayWidth := 750
 	overlayHeight := 50
 	overlayX := 0
@@ -22,10 +22,10 @@ func (g *Game) drawServerName(screen *ebiten.Image) {
 
 	textX := overlayX + 10
 	textY := overlayY + 30
-	util.DrawText(screen, g.mapView.serverName, textX, textY, CLR_WHITE, g.fnt.Normal)
+	util.DrawText(screen, mv.serverName, textX, textY, CLR_WHITE, util.Font.Normal)
 }
 
-func (g *Game) drawPlayerCount(screen *ebiten.Image) {
+func (mv *MapView) drawPlayerCount(screen *ebiten.Image) {
 	overlayWidth := 200
 	overlayHeight := 50
 	overlayX := 0
@@ -35,6 +35,6 @@ func (g *Game) drawPlayerCount(screen *ebiten.Image) {
 
 	textX := overlayX + 10
 	textY := overlayY + 30
-	info := fmt.Sprintf("Players: %d/%d", g.mapView.playerCurrCount, g.mapView.playerMaxCount)
-	util.DrawText(screen, info, textX, textY, CLR_WHITE, g.fnt.Normal)
+	info := fmt.Sprintf("Players: %d/%d", mv.playerCurrCount, mv.playerMaxCount)
+	util.DrawText(screen, info, textX, textY, CLR_WHITE, util.Font.Normal)
 }
