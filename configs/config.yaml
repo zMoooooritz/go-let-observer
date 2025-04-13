@@ -1,0 +1,39 @@
+
+# Server credentials for the server
+ServerCredentials:
+  Host: "123.123.123.123"
+  Port: "12345"
+  Password: "password"
+
+# Initial user interface state
+UIStartupOptions:
+  ScreenSize: 1000
+  ShowPlayers: true
+  ShowPlayerInfo: true
+  ShowSpawns: false
+  ShowGridOverlay: true
+  ShowServerInfoOverlay: false
+
+# Key binds used in the application
+# Only single characters except for 'ShowScoreboard'
+Keys:
+  IncreaseInterval:
+    - "+"
+  DecreaseInterval:
+    - "-"
+  TogglePlayers:
+    - "p"
+  TogglePlayerInfo:
+    - "i"
+  ToggleSpawns:
+    - "s"
+  ToggleGridOverlay:
+    - "g"
+  ToggleServerInfoOverlay:
+    - "h"
+  ShowScoreboard: # tab, space, enter or a character
+    - "tab"
+  Quit: # esc and ctrl+c can always be used to quit the application
+    - "q"
+  Help:
+    - "?"

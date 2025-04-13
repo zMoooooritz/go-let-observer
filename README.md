@@ -58,6 +58,8 @@ To start the observer, run the `go-let-observer` command:
 
 ```bash
 Usage of go-let-observer:
+  -config string
+        Path to config file
   -host string
         RCON server host
   -password string
@@ -74,11 +76,10 @@ Usage of go-let-observer:
 
 ## 🎮 Keybinds
 
+The keybinds can be configured, the following are the default ones:
+
 | Keybind              | Description                        |
 |----------------------|------------------------------------|
-| `LeftClick`          | Select player                      |
-| `RightClick-Drag`    | Pan the map                        |
-| `MouseWheel`         | Zoom in/out on the map             |
 | `+` / `-`            | Increase/Decrease update interval  |
 | `P`                  | Toggle players                     |
 | `I`                  | Toggle player info                 |
@@ -87,6 +88,12 @@ Usage of go-let-observer:
 | `H`                  | Toggle header overlay              |
 | `Tab`                | Show scoreboard                    |
 | `Esc`, `Q`, `Ctrl+C` | Exit the application               |
+
+| Mouse action         | Description                        |
+|----------------------|------------------------------------|
+| `LeftClick`          | Select player                      |
+| `RightClick-Drag`    | Pan the map                        |
+| `MouseWheel`         | Zoom the map                       |
 
 ---
 

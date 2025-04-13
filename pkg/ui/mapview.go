@@ -7,13 +7,14 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
 	"github.com/zMoooooritz/go-let-observer/assets"
+	"github.com/zMoooooritz/go-let-observer/pkg/rcndata"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -23,15 +24,15 @@ var fetchIntervalSteps = []time.Duration{
 	time.Second,
 	2 * time.Second,
 	5 * time.Second,
-	10 * time.Second,
 }
 
 type MapViewState struct {
-	showHeader        bool
+	showServerInfo    bool
 	showGrid          bool
 	showPlayers       bool
 	showPlayerInfo    bool
 	showSpawns        bool
+	showHelp          bool
 	showScoreboard    bool
 	initialDataLoaded bool
 	selectedPlayerID  string
@@ -61,7 +62,7 @@ type RconData struct {
 	playerMaxCount        int
 	playerMap             map[string]hll.DetailedPlayerInfo
 	playerList            []hll.DetailedPlayerInfo
-	spawnTracker          *SpawnTracker
+	spawnTracker          *rcndata.SpawnTracker
 }
 
 type MapView struct {
@@ -80,11 +81,11 @@ type MapView struct {
 func NewMapView(rcon *rconv2.Rcon, getDims func() (int, int)) *MapView {
 	return &MapView{
 		MapViewState: MapViewState{
-			showHeader:     false,
-			showGrid:       true,
-			showPlayers:    true,
-			showPlayerInfo: true,
-			showSpawns:     false,
+			showServerInfo: util.Config.UIStartupOptions.ShowServerInfoOverlay,
+			showGrid:       util.Config.UIStartupOptions.ShowGridOverlay,
+			showPlayers:    util.Config.UIStartupOptions.ShowPlayers,
+			showPlayerInfo: util.Config.UIStartupOptions.ShowPlayerInfo,
+			showSpawns:     util.Config.UIStartupOptions.ShowSpawns,
 		},
 		CameraState: CameraState{
 			zoomLevel: MIN_ZOOM_LEVEL,
@@ -93,7 +94,7 @@ func NewMapView(rcon *rconv2.Rcon, getDims func() (int, int)) *MapView {
 			intervalIndex: INITIAL_FETCH_STEP,
 		},
 		RconData: RconData{
-			spawnTracker: NewSpawnTracker(),
+			spawnTracker: rcndata.NewSpawnTracker(),
 		},
 		roleImages:  util.LoadRoleImages(),
 		spawnImages: util.LoadSpawnImages(),
@@ -112,7 +113,7 @@ func (mv *MapView) Update() error {
 		if !mv.isFetching {
 			mv.isFetching = true
 			go func() {
-				snapshot, err := fetchRconDataSnapshot(mv.rcon)
+				snapshot, err := rcndata.FetchRconDataSnapshot(mv.rcon)
 				if err == nil {
 					mv.processRconData(snapshot)
 				}
@@ -139,20 +140,23 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 
 	mv.drawMapView(screen)
 
-	if mv.showHeader {
-		mv.drawHeader(screen)
-	}
-
-	if mv.showScoreboard {
+	if mv.showHelp {
+		mv.drawHelp(screen)
+	} else if mv.showScoreboard {
 		mv.drawScoreboard(screen)
-	} else if mv.showPlayerInfo && mv.selectedPlayerID != "" {
-		if player, ok := mv.playerMap[mv.selectedPlayerID]; ok {
-			mv.drawPlayerOverlay(screen, player)
+	} else {
+		if mv.showServerInfo {
+			mv.drawHeader(screen)
+		}
+		if mv.showPlayerInfo {
+			if player, ok := mv.playerMap[mv.selectedPlayerID]; ok {
+				mv.drawPlayerOverlay(screen, player)
+			}
 		}
 	}
 }
 
-func (mv *MapView) processRconData(snapshot *RconDataSnapshot) {
+func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
 	oldPlayerMap := mv.playerMap
 	playerMap := map[string]hll.DetailedPlayerInfo{}
 	for _, player := range snapshot.Players {
@@ -267,30 +271,29 @@ func (mv *MapView) drawPlayer(screen *ebiten.Image, player hll.DetailedPlayerInf
 		options.GeoM.Translate(x-targetSize/2, y-targetSize/2)
 		screen.DrawImage(roleImage, options)
 	}
-
 }
 
 func (mv *MapView) drawSpawns(screen *ebiten.Image) {
 	sizeX, sizeY := mv.getDims()
 	spawns := mv.spawnTracker.GetSpawns()
 	for _, spawn := range spawns {
-		if spawn.spawnType == SpawnTypeNone {
+		if spawn.SpawnType == rcndata.SpawnTypeNone {
 			continue
 		}
 
-		x, y := util.TranslateCoords(sizeX, sizeY, spawn.position)
+		x, y := util.TranslateCoords(sizeX, sizeY, spawn.Position)
 		x = x*mv.zoomLevel + mv.panX
 		y = y*mv.zoomLevel + mv.panY
 
 		clr := CLR_ALLIES_SPAWN
-		if spawn.team == hll.TmAxis {
+		if spawn.Team == hll.TmAxis {
 			clr = CLR_AXIS_SPAWN
 		}
 
 		rectSize := int(2 * util.IconCircleRadius(mv.zoomLevel, SPAWN_SIZE_MODIFIER))
 		util.DrawScaledRect(screen, int(x)-rectSize/2, int(y)-rectSize/2, rectSize, rectSize, clr)
 
-		spawnImage, ok := mv.spawnImages[string(spawn.spawnType)]
+		spawnImage, ok := mv.spawnImages[string(spawn.SpawnType)]
 		if ok {
 			targetSize := util.IconSize(mv.zoomLevel, SPAWN_SIZE_MODIFIER)
 			iconScale := targetSize / float64(spawnImage.Bounds().Dx())
@@ -415,43 +418,76 @@ func (mv *MapView) handleMouseInput() {
 }
 
 func (mv *MapView) handleKeyboardInput() {
-	if ebiten.IsKeyPressed(ebiten.KeyTab) {
-		mv.showScoreboard = true
-		mv.selectedPlayerID = ""
-	} else {
-		mv.showScoreboard = false
-	}
+	typed := ebiten.AppendInputChars(nil)
+	for _, r := range typed {
+		typedKey := string(unicode.ToLower(r))
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
-		mv.showGrid = !mv.showGrid
-	}
+		for _, key := range util.Config.Keys.ToggleGridOverlay {
+			if typedKey == strings.ToLower(key) {
+				mv.showGrid = !mv.showGrid
+				break
+			}
+		}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
-		mv.showPlayers = !mv.showPlayers
-		mv.selectedPlayerID = ""
-	}
+		for _, key := range util.Config.Keys.TogglePlayers {
+			if typedKey == strings.ToLower(key) {
+				mv.showPlayers = !mv.showPlayers
+				break
+			}
+		}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyI) {
-		mv.showPlayerInfo = !mv.showPlayerInfo
-	}
+		for _, key := range util.Config.Keys.TogglePlayerInfo {
+			if typedKey == strings.ToLower(key) {
+				mv.showPlayerInfo = !mv.showPlayerInfo
+				break
+			}
+		}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
-		mv.showSpawns = !mv.showSpawns
-	}
+		for _, key := range util.Config.Keys.ToggleSpawns {
+			if typedKey == strings.ToLower(key) {
+				mv.showSpawns = !mv.showSpawns
+				break
+			}
+		}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
-		mv.showHeader = !mv.showHeader
-	}
+		for _, key := range util.Config.Keys.ToggleServerInfoOverlay {
+			if typedKey == strings.ToLower(key) {
+				mv.showServerInfo = !mv.showServerInfo
+				break
+			}
+		}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyNumpadAdd) || inpututil.IsKeyJustPressed(ebiten.KeyRightBracket) {
-		if mv.intervalIndex < len(fetchIntervalSteps)-1 {
-			mv.intervalIndex += 1
+		for _, key := range util.Config.Keys.IncreaseInterval {
+			if typedKey == strings.ToLower(key) {
+				if mv.intervalIndex < len(fetchIntervalSteps)-1 {
+					mv.intervalIndex++
+				}
+				break
+			}
+		}
+
+		for _, key := range util.Config.Keys.DecreaseInterval {
+			if typedKey == strings.ToLower(key) {
+				if mv.intervalIndex > 0 {
+					mv.intervalIndex--
+				}
+				break
+			}
+		}
+
+		for _, key := range util.Config.Keys.Help {
+			if typedKey == strings.ToLower(key) {
+				mv.showHelp = !mv.showHelp
+				break
+			}
 		}
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyNumpadSubtract) || inpututil.IsKeyJustPressed(ebiten.KeySlash) {
-		if mv.intervalIndex > 0 {
-			mv.intervalIndex -= 1
+	mv.showScoreboard = false
+	for _, key := range util.Config.Keys.ShowScoreboard {
+		if ebiten.IsKeyPressed(util.MapKey(key)) {
+			mv.showScoreboard = true
+			break
 		}
 	}
 }

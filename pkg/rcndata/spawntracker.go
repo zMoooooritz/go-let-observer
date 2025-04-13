@@ -1,4 +1,4 @@
-package ui
+package rcndata
 
 import (
 	"sync"
@@ -27,13 +27,13 @@ var spawnTTL = map[SpawnType]time.Duration{
 }
 
 type SpawnPoint struct {
-	position   hll.Position
-	team       hll.Team
-	spawnType  SpawnType
-	lastSeen   time.Time
-	spawnCount int
-	unit       string
-	usedBy     map[string]bool
+	Position   hll.Position
+	Team       hll.Team
+	SpawnType  SpawnType
+	LastSeen   time.Time
+	SpawnCount int
+	Unit       string
+	UsedBy     map[string]bool
 }
 
 type SpawnTracker struct {
@@ -70,8 +70,8 @@ func (st *SpawnTracker) CleanExpiredSpawns() {
 
 	active := []SpawnPoint{}
 	for _, spawn := range st.spawns {
-		if ttl, ok := spawnTTL[spawn.spawnType]; ok {
-			if time.Since(spawn.lastSeen) < ttl {
+		if ttl, ok := spawnTTL[spawn.SpawnType]; ok {
+			if time.Since(spawn.LastSeen) < ttl {
 				active = append(active, spawn)
 			}
 		}
@@ -92,11 +92,11 @@ func hasJustSpawned(previous, current hll.DetailedPlayerInfo) bool {
 func (st *SpawnTracker) destroyNearbySpawns(player hll.DetailedPlayerInfo) {
 	for i := len(st.spawns) - 1; i >= 0; i-- {
 		spawn := &st.spawns[i]
-		if spawn.team != player.Team {
-			if spawn.spawnType == SpawnTypeOutpost && player.PlanarDistanceTo(spawn.position) <= OUTPOST_DESTRUCTION_DISTANCE {
+		if spawn.Team != player.Team {
+			if spawn.SpawnType == SpawnTypeOutpost && player.PlanarDistanceTo(spawn.Position) <= OUTPOST_DESTRUCTION_DISTANCE {
 				st.spawns = append(st.spawns[:i], st.spawns[i+1:]...)
 			}
-			if spawn.spawnType == SpawnTypeGarrison && player.PlanarDistanceTo(spawn.position) <= GARRISON_DESTRUCTION_DISTANCE {
+			if spawn.SpawnType == SpawnTypeGarrison && player.PlanarDistanceTo(spawn.Position) <= GARRISON_DESTRUCTION_DISTANCE {
 				st.spawns = append(st.spawns[:i], st.spawns[i+1:]...)
 			}
 		}
@@ -118,8 +118,8 @@ func (st *SpawnTracker) handlePlayerSpawn(player hll.DetailedPlayerInfo) {
 
 func (st *SpawnTracker) isNearExistingSpawn(player hll.DetailedPlayerInfo) (int, bool) {
 	for i, spawn := range st.spawns {
-		if spawn.team == player.Team {
-			if player.PlanarDistanceTo(spawn.position) <= SPAWN_DISTANCE_DELTA {
+		if spawn.Team == player.Team {
+			if player.PlanarDistanceTo(spawn.Position) <= SPAWN_DISTANCE_DELTA {
 				return i, true
 			}
 		}
@@ -129,17 +129,17 @@ func (st *SpawnTracker) isNearExistingSpawn(player hll.DetailedPlayerInfo) (int,
 
 func (st *SpawnTracker) updateSpawnPoint(index int, player hll.DetailedPlayerInfo) {
 	spawn := &st.spawns[index]
-	spawn.lastSeen = time.Now()
-	spawn.spawnCount += 1
+	spawn.LastSeen = time.Now()
+	spawn.SpawnCount += 1
 
-	spawn.position.X = (spawn.position.X*float64(spawn.spawnCount-1) + player.Position.X) / float64(spawn.spawnCount)
-	spawn.position.Y = (spawn.position.Y*float64(spawn.spawnCount-1) + player.Position.Y) / float64(spawn.spawnCount)
-	spawn.position.Z = (spawn.position.Z*float64(spawn.spawnCount-1) + player.Position.Z) / float64(spawn.spawnCount)
+	spawn.Position.X = (spawn.Position.X*float64(spawn.SpawnCount-1) + player.Position.X) / float64(spawn.SpawnCount)
+	spawn.Position.Y = (spawn.Position.Y*float64(spawn.SpawnCount-1) + player.Position.Y) / float64(spawn.SpawnCount)
+	spawn.Position.Z = (spawn.Position.Z*float64(spawn.SpawnCount-1) + player.Position.Z) / float64(spawn.SpawnCount)
 
-	if spawn.usedBy == nil {
-		spawn.usedBy = make(map[string]bool)
+	if spawn.UsedBy == nil {
+		spawn.UsedBy = make(map[string]bool)
 	}
-	spawn.usedBy[player.Unit.Name] = true
+	spawn.UsedBy[player.Unit.Name] = true
 }
 
 func (st *SpawnTracker) addNewSpawnPoint(player hll.DetailedPlayerInfo) {
@@ -147,13 +147,13 @@ func (st *SpawnTracker) addNewSpawnPoint(player hll.DetailedPlayerInfo) {
 	usedBy[player.Unit.Name] = true
 
 	spawn := SpawnPoint{
-		position:   player.Position,
-		team:       player.Team,
-		spawnType:  SpawnTypeNone,
-		lastSeen:   time.Now(),
-		spawnCount: 1,
-		unit:       player.Unit.Name,
-		usedBy:     usedBy,
+		Position:   player.Position,
+		Team:       player.Team,
+		SpawnType:  SpawnTypeNone,
+		LastSeen:   time.Now(),
+		SpawnCount: 1,
+		Unit:       player.Unit.Name,
+		UsedBy:     usedBy,
 	}
 
 	st.spawns = append(st.spawns, spawn)
@@ -163,10 +163,10 @@ func (st *SpawnTracker) analyzeSpawnTypes() {
 	for i := range st.spawns {
 		spawn := &st.spawns[i]
 
-		if len(spawn.usedBy) > 1 {
-			spawn.spawnType = SpawnTypeGarrison
+		if len(spawn.UsedBy) > 1 {
+			spawn.SpawnType = SpawnTypeGarrison
 		} else {
-			spawn.spawnType = SpawnTypeOutpost
+			spawn.SpawnType = SpawnTypeOutpost
 		}
 	}
 }

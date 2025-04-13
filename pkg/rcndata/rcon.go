@@ -1,4 +1,4 @@
-package ui
+package rcndata
 
 import (
 	"time"
@@ -14,7 +14,7 @@ type RconDataSnapshot struct {
 	FetchTime   time.Time
 }
 
-func fetchRconDataSnapshot(rcon *rconv2.Rcon) (*RconDataSnapshot, error) {
+func FetchRconDataSnapshot(rcon *rconv2.Rcon) (*RconDataSnapshot, error) {
 	players, err := rcon.GetPlayersInfo()
 	if err != nil {
 		return nil, err

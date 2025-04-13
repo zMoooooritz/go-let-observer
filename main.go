@@ -10,7 +10,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
-	ui "github.com/zMoooooritz/go-let-observer/pkg/game"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -19,6 +19,7 @@ var (
 	Version   = ""
 	CommitSHA = ""
 
+	config   = flag.String("config", "", "Path to config file")
 	host     = flag.String("host", "", "RCON server host")
 	port     = flag.String("port", "", "RCON server port")
 	password = flag.String("password", "", "RCON server password")
@@ -28,6 +29,8 @@ var (
 
 func main() {
 	flag.Parse()
+
+	err := util.InitConfig(*config)
 
 	if *version {
 		if len(CommitSHA) > 7 {
@@ -46,12 +49,45 @@ func main() {
 		os.Exit(0)
 	}
 
+	serverHost := ""
+	serverPort := ""
+	serverPassword := ""
+	screenSize := 0
+
+	if err == nil {
+		if util.Config.ServerCredentials.Host != "" {
+			serverHost = util.Config.ServerCredentials.Host
+		}
+		if util.Config.ServerCredentials.Port != "" {
+			serverPort = util.Config.ServerCredentials.Port
+		}
+		if util.Config.ServerCredentials.Password != "" {
+			serverPassword = util.Config.ServerCredentials.Password
+		}
+		if util.Config.UIStartupOptions.ScreenSize != 0 {
+			screenSize = util.Config.UIStartupOptions.ScreenSize
+		}
+	}
+
+	if *host != "" {
+		serverHost = *host
+	}
+	if *port != "" {
+		serverPort = *port
+	}
+	if *password != "" {
+		serverPassword = *password
+	}
+	if *size != ui.ROOT_SCALING_SIZE {
+		screenSize = *size
+	}
+
 	var rcon *rconv2.Rcon
-	if *host != "" && *port != "" && *password != "" {
+	if serverHost != "" && serverPort != "" && serverPassword != "" {
 		cfg := rconv2.ServerConfig{
-			Host:     *host,
-			Port:     *port,
-			Password: *password,
+			Host:     serverHost,
+			Port:     serverPort,
+			Password: serverPassword,
 		}
 
 		// Attempt to connect with the provided credentials
@@ -61,11 +97,12 @@ func main() {
 			log.Fatal("Invalid CLI credentials or connection error")
 		}
 	}
-	size := util.Clamp(*size, ui.MIN_SCREEN_SIZE, ui.MAX_SCREEN_SIZE)
-	util.InitializeFonts(size)
-	userInterface := ui.NewUI(size, rcon)
 
-	ebiten.SetWindowSize(size, size)
+	screenSize = util.Clamp(screenSize, ui.MIN_SCREEN_SIZE, ui.MAX_SCREEN_SIZE)
+	util.InitializeFonts(screenSize)
+	userInterface := ui.NewUI(screenSize, rcon)
+
+	ebiten.SetWindowSize(screenSize, screenSize)
 	ebiten.SetWindowTitle("HLL Observer")
 	if err := ebiten.RunGame(userInterface); err != nil {
 		log.Fatal(err)
