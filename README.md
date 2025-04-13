@@ -12,7 +12,7 @@ A **Go-based observer tool** for the game **Hell Let Loose**, providing a graphi
 
 ## 📸 Preview
 
-| ![HLL-Observer-1](https://github.com/user-attachments/assets/552786c2-6c72-4061-914a-44a07bc1c5e1) | ![HLL-Observer-2](https://github.com/user-attachments/assets/d3643146-d35c-48ea-ac34-2dd43dcf8519) |
+| ![HLL-Observer-1](https://github.com/user-attachments/assets/552786c2-6c72-4061-914a-44a07bc1c5e1) | ![HLL-Observer-3](https://github.com/user-attachments/assets/3a550c31-db05-4903-9040-afc53df1c400) |
 |:--------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------|
 
 ---
@@ -76,8 +76,8 @@ Usage of go-let-observer:
 
 | Keybind              | Description                        |
 |----------------------|------------------------------------|
-| `LeftClick`          | Show/Hide player info              |
-| `RightClick-Drag`    | Move the map view                  |
+| `LeftClick`          | Select player                      |
+| `RightClick-Drag`    | Pan the map                        |
 | `MouseWheel`         | Zoom in/out on the map             |
 | `+` / `-`            | Increase/Decrease update interval  |
 | `P`                  | Toggle players                     |
