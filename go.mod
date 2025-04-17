@@ -4,8 +4,9 @@ go 1.24.1
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.8.7
-	github.com/zMoooooritz/go-let-loose v0.4.3
+	github.com/zMoooooritz/go-let-loose v0.4.5
 	golang.org/x/image v0.26.0
+	google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 v3.0.1
 )
 

@@ -7,12 +7,7 @@ import (
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
-func (mv *MapView) drawHeader(screen *ebiten.Image) {
-	mv.drawServerName(screen)
-	mv.drawPlayerCount(screen)
-}
-
-func (mv *MapView) drawServerName(screen *ebiten.Image) {
+func drawServerName(screen *ebiten.Image, serverName string) {
 	overlayWidth := 750
 	overlayHeight := 50
 	overlayX := 0
@@ -22,10 +17,10 @@ func (mv *MapView) drawServerName(screen *ebiten.Image) {
 
 	textX := overlayX + 10
 	textY := overlayY + 30
-	util.DrawText(screen, mv.serverName, textX, textY, CLR_WHITE, util.Font.Normal)
+	util.DrawText(screen, serverName, textX, textY, CLR_WHITE, util.Font.Normal)
 }
 
-func (mv *MapView) drawPlayerCount(screen *ebiten.Image) {
+func drawPlayerCount(screen *ebiten.Image, playerCurrCount, playerMaxCount int) {
 	overlayWidth := 200
 	overlayHeight := 50
 	overlayX := 0
@@ -35,6 +30,6 @@ func (mv *MapView) drawPlayerCount(screen *ebiten.Image) {
 
 	textX := overlayX + 10
 	textY := overlayY + 30
-	info := fmt.Sprintf("Players: %d/%d", mv.playerCurrCount, mv.playerMaxCount)
+	info := fmt.Sprintf("Players: %d/%d", playerCurrCount, playerMaxCount)
 	util.DrawText(screen, info, textX, textY, CLR_WHITE, util.Font.Normal)
 }

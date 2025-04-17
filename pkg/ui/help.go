@@ -19,6 +19,9 @@ var (
 		{"G", "Toggle grid overlay"},
 		{"H", "Toggle header overlay"},
 		{"Tab", "Show scoreboard"},
+		{"Space", "Toggle replay pause"},
+		{"Right", "Seek forward in replay"},
+		{"Left", "Seek backward in replay"},
 		{"?", "Show this help"},
 		{"Esc, Q, Ctrl+C", "Exit the application"},
 	}
@@ -33,7 +36,7 @@ var (
 	}
 )
 
-func (mv *MapView) drawHelp(screen *ebiten.Image) {
+func drawHelp(screen *ebiten.Image) {
 	helpWidth := 600
 	helpHeight := 400
 	screenWidth := ROOT_SCALING_SIZE

@@ -8,7 +8,7 @@ import (
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
-func (mv *MapView) drawPlayerOverlay(screen *ebiten.Image, player hll.DetailedPlayerInfo) {
+func drawPlayerOverlay(screen *ebiten.Image, player hll.DetailedPlayerInfo) {
 	overlayWidth := 250
 	overlayHeight := ROOT_SCALING_SIZE
 	overlayX := ROOT_SCALING_SIZE - overlayWidth

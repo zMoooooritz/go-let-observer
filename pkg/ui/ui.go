@@ -2,9 +2,12 @@ package ui
 
 import (
 	"image/color"
+	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
+	"github.com/zMoooooritz/go-let-observer/pkg/rcndata"
+	"github.com/zMoooooritz/go-let-observer/pkg/record"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -56,7 +59,36 @@ type UI struct {
 	state State
 }
 
-func NewUI(size int, rcon *rconv2.Rcon) *UI {
+func getFetcherAndRecorder(rcon *rconv2.Rcon, recordPath string, replayPath string) (rcndata.DataFetcher, record.DataRecorder) {
+	var dataFetcher rcndata.DataFetcher
+	if replayPath == "" {
+		dataFetcher = rcndata.NewRconDataFetcher(rcon)
+	} else {
+		var err error
+		dataFetcher, err = record.NewMatchReplayer(replayPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	var dataRecorder record.DataRecorder
+	if recordPath != "" {
+		currMap, err := rcon.GetCurrentMap()
+		if err != nil {
+			log.Fatal(err)
+		}
+		dataRecorder, err = record.NewMatchRecorder(recordPath, currMap)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		dataRecorder = &record.NoRecorder{}
+	}
+
+	return dataFetcher, dataRecorder
+}
+
+func NewUI(size int, rcon *rconv2.Rcon, recordPath string, replayPath string) *UI {
 	util.ScaleFactor = float32(size) / float32(ROOT_SCALING_SIZE)
 
 	dim := &ViewDimension{
@@ -68,19 +100,19 @@ func NewUI(size int, rcon *rconv2.Rcon) *UI {
 		dim: dim,
 	}
 
-	if rcon == nil {
-		ui.state = NewLoginView(ui.openMapView)
+	dataFetcher, dataRecorder := getFetcherAndRecorder(rcon, recordPath, replayPath)
+	showLoginView := rcon == nil && replayPath == ""
+
+	if showLoginView {
+		ui.state = NewLoginView(ui.openMapView, recordPath)
 	} else {
-		ui.state = NewMapView(rcon, dim.getDims)
+		ui.state = NewMapView(dataFetcher, dataRecorder, dim.getDims)
 	}
 
 	return ui
 }
 
 func (ui *UI) Update() error {
-	if ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyC) || ebiten.IsKeyPressed(ebiten.KeyEscape) {
-		return ebiten.Termination
-	}
 
 	return ui.state.Update()
 }
@@ -93,6 +125,7 @@ func (ui *UI) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return ui.dim.sizeX, ui.dim.sizeX
 }
 
-func (ui *UI) openMapView(rcon *rconv2.Rcon) {
-	ui.state = NewMapView(rcon, ui.dim.getDims)
+func (ui *UI) openMapView(rcon *rconv2.Rcon, recordPath string) {
+	dataFetcher, dataRecorder := getFetcherAndRecorder(rcon, recordPath, "")
+	ui.state = NewMapView(dataFetcher, dataRecorder, ui.dim.getDims)
 }

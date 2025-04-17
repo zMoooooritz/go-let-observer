@@ -6,10 +6,11 @@ import (
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
-func (mv *MapView) drawScoreboard(screen *ebiten.Image) {
+func drawScoreboard(screen *ebiten.Image, playerList []hll.DetailedPlayerInfo) {
 	scoreboardWidth := 800
 	scoreboardHeight := 500
 	screenWidth := ROOT_SCALING_SIZE
@@ -25,7 +26,7 @@ func (mv *MapView) drawScoreboard(screen *ebiten.Image) {
 	util.DrawText(screen, "Scoreboard (Top 25 Players)", textX, textY, CLR_WHITE, util.Font.Normal)
 	textY += lineHeight
 
-	sortedPlayers := mv.playerList
+	sortedPlayers := playerList
 	sort.Slice(sortedPlayers, func(i, j int) bool {
 		return sortedPlayers[i].Score.Combat > sortedPlayers[j].Score.Combat // TODO: sort by kills when data is present in data recv from server
 	})

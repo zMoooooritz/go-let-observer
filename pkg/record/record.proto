@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package record;
+
+option go_package = "github.com/zMoooooritz/go-let-observer/record;record";
+
+import "google/protobuf/timestamp.proto";
+
+message MatchPlayer {
+    string name = 1;
+    string id = 2;
+    int32 record_id = 3;
+    int32 level = 4;
+    string clan_tag = 5;
+}
+
+message MatchHeader {
+    string version = 1;
+    string map_id = 2;
+    google.protobuf.Timestamp start_time = 3;
+    google.protobuf.Timestamp end_time = 4;
+    map<string, MatchPlayer> players = 5;
+}
+
+message PlayerState {
+    int32 player_id = 1;
+    sint32 x = 2;
+    sint32 y = 3;
+    int32 kills = 4;
+    int32 deaths = 5;
+    int32 team = 6;
+    int32 unit = 7;
+    int32 role = 8;
+}
+
+message PlayerDelta {
+    int32 player_id = 1;
+    sint32 x = 2;
+    sint32 y = 3;
+    optional int32 kills = 4;
+    optional int32 deaths = 5;
+    optional int32 team = 6;
+    optional int32 unit = 7;
+    optional int32 role = 8;
+}
+
+message FullSnapshot {
+    repeated PlayerState players = 1;
+}
+
+message DeltaSnapshot {
+    repeated PlayerDelta players = 1;
+}
+
+message Snapshot {
+    int32 index = 1;
+    google.protobuf.Timestamp timestamp = 2;
+    oneof data {
+        FullSnapshot full_snapshot = 3;
+        DeltaSnapshot delta_snapshot = 4;
+    }
+}
+
+message MatchData {
+    MatchHeader header = 1;
+    repeated Snapshot snapshots = 2;
+}

@@ -18,17 +18,23 @@ type LoginView struct {
 	passwordInput string
 	errorMessage  string
 
-	openMapView func(*rconv2.Rcon)
+	openMapView func(*rconv2.Rcon, string)
+	recordPath  string
 }
 
-func NewLoginView(openMapView func(*rconv2.Rcon)) *LoginView {
+func NewLoginView(openMapView func(*rconv2.Rcon, string), recordPath string) *LoginView {
 	return &LoginView{
 		backgroundImage: util.LoadGreeterImage(),
 		openMapView:     openMapView,
+		recordPath:      recordPath,
 	}
 }
 
 func (lv *LoginView) Update() error {
+	if ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyC) || ebiten.IsKeyPressed(ebiten.KeyEscape) {
+		return ebiten.Termination
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
 		lv.activeField = (lv.activeField + 1) % 3
 	}
@@ -44,7 +50,7 @@ func (lv *LoginView) Update() error {
 			if err != nil {
 				lv.errorMessage = "Invalid credentials or connection error"
 			} else {
-				lv.openMapView(rcn)
+				lv.openMapView(rcn, lv.recordPath)
 			}
 		} else {
 			lv.errorMessage = "All fields are required"

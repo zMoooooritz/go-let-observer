@@ -10,12 +10,17 @@ import (
 	"unicode"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
-	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
 	"github.com/zMoooooritz/go-let-observer/assets"
 	"github.com/zMoooooritz/go-let-observer/pkg/rcndata"
+	"github.com/zMoooooritz/go-let-observer/pkg/record"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
+)
+
+const (
+	REPLAY = true
 )
 
 var fetchIntervalSteps = []time.Duration{
@@ -74,11 +79,12 @@ type MapView struct {
 	spawnImages map[string]*ebiten.Image
 
 	backgroundImage *ebiten.Image
-	rcon            *rconv2.Rcon
+	dataFetcher     rcndata.DataFetcher
+	dataRecorder    record.DataRecorder
 	getDims         func() (int, int)
 }
 
-func NewMapView(rcon *rconv2.Rcon, getDims func() (int, int)) *MapView {
+func NewMapView(dataFetcher rcndata.DataFetcher, dataRecorder record.DataRecorder, getDims func() (int, int)) *MapView {
 	return &MapView{
 		MapViewState: MapViewState{
 			showServerInfo: util.Config.UIStartupOptions.ShowServerInfoOverlay,
@@ -96,15 +102,17 @@ func NewMapView(rcon *rconv2.Rcon, getDims func() (int, int)) *MapView {
 		RconData: RconData{
 			spawnTracker: rcndata.NewSpawnTracker(),
 		},
-		roleImages:  util.LoadRoleImages(),
-		spawnImages: util.LoadSpawnImages(),
-		rcon:        rcon,
-		getDims:     getDims,
+		roleImages:   util.LoadRoleImages(),
+		spawnImages:  util.LoadSpawnImages(),
+		dataFetcher:  dataFetcher,
+		dataRecorder: dataRecorder,
+		getDims:      getDims,
 	}
 }
 
 func (mv *MapView) Update() error {
-	if ebiten.IsKeyPressed(ebiten.KeyQ) {
+	if ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyC) || ebiten.IsKeyPressed(ebiten.KeyEscape) || ebiten.IsKeyPressed(ebiten.KeyQ) {
+		mv.dataRecorder.Stop()
 		return ebiten.Termination
 	}
 
@@ -113,12 +121,19 @@ func (mv *MapView) Update() error {
 		if !mv.isFetching {
 			mv.isFetching = true
 			go func() {
-				snapshot, err := rcndata.FetchRconDataSnapshot(mv.rcon)
+				snapshot, err := mv.dataFetcher.FetchRconDataSnapshot()
 				if err == nil {
 					mv.processRconData(snapshot)
+					mv.dataRecorder.RecordSnapshot(snapshot)
 				}
 				mv.fetchMutex.Lock()
+				mv.lastUpdateTime = time.Now()
 				mv.isFetching = false
+
+				if !mv.dataFetcher.IsPaused() {
+					mv.dataFetcher.Seek(10 * fetchIntervalSteps[mv.intervalIndex])
+				}
+
 				mv.fetchMutex.Unlock()
 			}()
 		}
@@ -141,18 +156,26 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 	mv.drawMapView(screen)
 
 	if mv.showHelp {
-		mv.drawHelp(screen)
+		drawHelp(screen)
 	} else if mv.showScoreboard {
-		mv.drawScoreboard(screen)
+		drawScoreboard(screen, mv.playerList)
 	} else {
 		if mv.showServerInfo {
-			mv.drawHeader(screen)
+			drawServerName(screen, mv.serverName)
+			drawPlayerCount(screen, mv.playerCurrCount, mv.playerMaxCount)
 		}
 		if mv.showPlayerInfo {
 			if player, ok := mv.playerMap[mv.selectedPlayerID]; ok {
-				mv.drawPlayerOverlay(screen, player)
+				drawPlayerOverlay(screen, player)
 			}
 		}
+	}
+
+	if mv.dataFetcher.IsUserSeekable() {
+		start, current, end := mv.dataFetcher.StartCurrentEndTime()
+		progress := float64(current.Sub(start)) / float64(end.Sub(start))
+
+		drawProgressBar(screen, progress)
 	}
 }
 
@@ -161,21 +184,34 @@ func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
 	playerMap := map[string]hll.DetailedPlayerInfo{}
 	for _, player := range snapshot.Players {
 		playerMap[player.ID] = player
-		if oldPlayer, ok := oldPlayerMap[player.ID]; ok {
-			mv.spawnTracker.TrackPlayerPosition(oldPlayer, player)
+		if !mv.dataFetcher.IsUserSeekable() {
+			if oldPlayer, ok := oldPlayerMap[player.ID]; ok {
+				mv.spawnTracker.TrackPlayerPosition(oldPlayer, player)
+			}
 		}
 	}
 	sort.Slice(snapshot.Players, func(i, j int) bool {
 		return snapshot.Players[i].ID > snapshot.Players[j].ID
 	})
-	mv.spawnTracker.CleanExpiredSpawns()
+
+	if !mv.dataFetcher.IsUserSeekable() {
+		mv.spawnTracker.CleanExpiredSpawns()
+	}
+
 	mv.playerMap = playerMap
 	mv.playerList = snapshot.Players
 
 	currMapName := assets.ToFileName(snapshot.CurrentMap.ID)
 	mv.currentMapOrientation = snapshot.CurrentMap.Orientation
 	if currMapName != mv.currentMapName {
-		mv.spawnTracker.ResetSpawns()
+		if !mv.dataFetcher.IsUserSeekable() {
+			mv.spawnTracker.ResetSpawns()
+		}
+
+		if mv.currentMapName != "" && currMapName != "" {
+			mv.dataRecorder.MapChanged(snapshot.CurrentMap)
+		}
+
 		mv.currentMapName = currMapName
 		img, err := util.LoadMapImage(currMapName)
 		if err == nil {
@@ -189,7 +225,6 @@ func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
 	mv.playerCurrCount = snapshot.SessionInfo.PlayerCount
 	mv.playerMaxCount = snapshot.SessionInfo.MaxPlayerCount
 
-	mv.lastUpdateTime = snapshot.FetchTime
 	mv.initialDataLoaded = true
 }
 
@@ -213,7 +248,7 @@ func (mv *MapView) drawMapView(screen *ebiten.Image) {
 		mv.drawGrid(screen, screenSize.X, screenSize.Y)
 	}
 
-	if mv.showSpawns {
+	if mv.showSpawns && !mv.dataFetcher.IsUserSeekable() {
 		mv.drawSpawns(screen)
 	}
 
@@ -422,72 +457,75 @@ func (mv *MapView) handleKeyboardInput() {
 	for _, r := range typed {
 		typedKey := string(unicode.ToLower(r))
 
-		for _, key := range util.Config.Keys.ToggleGridOverlay {
-			if typedKey == strings.ToLower(key) {
-				mv.showGrid = !mv.showGrid
-				break
+		if typedKey == "g" {
+			mv.showGrid = !mv.showGrid
+		}
+
+		if typedKey == "p" {
+			mv.showPlayers = !mv.showPlayers
+		}
+		if typedKey == "i" {
+			mv.showPlayerInfo = !mv.showPlayerInfo
+		}
+
+		if typedKey == "s" {
+			mv.showSpawns = !mv.showSpawns
+		}
+
+		if typedKey == "h" {
+			mv.showServerInfo = !mv.showServerInfo
+		}
+
+		if typedKey == "+" {
+			if mv.intervalIndex < len(fetchIntervalSteps)-1 {
+				mv.intervalIndex++
 			}
 		}
 
-		for _, key := range util.Config.Keys.TogglePlayers {
-			if typedKey == strings.ToLower(key) {
-				mv.showPlayers = !mv.showPlayers
-				break
+		if typedKey == "-" {
+			if mv.intervalIndex > 0 {
+				mv.intervalIndex--
 			}
 		}
 
-		for _, key := range util.Config.Keys.TogglePlayerInfo {
-			if typedKey == strings.ToLower(key) {
-				mv.showPlayerInfo = !mv.showPlayerInfo
-				break
-			}
+		if typedKey == "?" {
+			mv.showHelp = !mv.showHelp
 		}
 
-		for _, key := range util.Config.Keys.ToggleSpawns {
-			if typedKey == strings.ToLower(key) {
-				mv.showSpawns = !mv.showSpawns
-				break
-			}
-		}
-
-		for _, key := range util.Config.Keys.ToggleServerInfoOverlay {
-			if typedKey == strings.ToLower(key) {
-				mv.showServerInfo = !mv.showServerInfo
-				break
-			}
-		}
-
-		for _, key := range util.Config.Keys.IncreaseInterval {
-			if typedKey == strings.ToLower(key) {
-				if mv.intervalIndex < len(fetchIntervalSteps)-1 {
-					mv.intervalIndex++
-				}
-				break
-			}
-		}
-
-		for _, key := range util.Config.Keys.DecreaseInterval {
-			if typedKey == strings.ToLower(key) {
-				if mv.intervalIndex > 0 {
-					mv.intervalIndex--
-				}
-				break
-			}
-		}
-
-		for _, key := range util.Config.Keys.Help {
-			if typedKey == strings.ToLower(key) {
-				mv.showHelp = !mv.showHelp
-				break
-			}
-		}
 	}
 
 	mv.showScoreboard = false
-	for _, key := range util.Config.Keys.ShowScoreboard {
-		if ebiten.IsKeyPressed(util.MapKey(key)) {
-			mv.showScoreboard = true
-			break
+	if ebiten.IsKeyPressed(ebiten.KeyTab) {
+		mv.showScoreboard = true
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		if mv.dataFetcher.IsPaused() {
+			mv.dataFetcher.Continue()
+		} else {
+			mv.dataFetcher.Pause()
 		}
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+		duration := -time.Second
+		if ebiten.IsKeyPressed(ebiten.KeyShift) {
+			duration = -time.Minute
+		}
+		mv.dataFetcher.Seek(duration)
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) {
+		mv.dataFetcher.Seek(-2 * time.Hour)
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+		duration := time.Second
+		if ebiten.IsKeyPressed(ebiten.KeyShift) {
+			duration = time.Minute
+		}
+		mv.dataFetcher.Seek(duration)
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
+		mv.dataFetcher.Seek(2 * time.Hour)
 	}
 }

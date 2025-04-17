@@ -6,7 +6,7 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/zMoooooritz/go-let-observer/build.yml?branch=master&style=for-the-badge)](https://github.com/zMoooooritz/nachrichten/actions)
 [![Go ReportCard](https://goreportcard.com/badge/github.com/zMoooooritz/go-let-observer?style=for-the-badge)](https://goreportcard.com/report/zMoooooritz/go-let-observer)
 
-A **Go-based observer tool** for the game **Hell Let Loose**, providing a graphical interface for monitoring server and player data in real time.
+A **Go-based observer tool** for the game **Hell Let Loose**, providing a graphical interface to monitor server and player data in real time.
 
 ---
 
@@ -21,8 +21,8 @@ A **Go-based observer tool** for the game **Hell Let Loose**, providing a graphi
 
 - **Real-time player information**: Displays detailed player stats, including name, role, team, and more.
 - **Server monitoring**: View server name, map details, and player counts.
-- **Interactive map view**: Zoom, pan, and toggle grid overlays.
-- **Customizable UI**: Easily extendable for additional features.
+- **Interactive map view**: Zoom, pan, and toggle overlays.
+- **Recording and Replaying**: Record gameplay or actions and replay them for analysis or debugging.
 
 ---
 
@@ -36,7 +36,7 @@ To install the Go package, simply run:
 go install github.com/zMoooooritz/go-let-observer@latest
 ```
 
-or download from [releases](https://github.com/zMoooooritz/go-let-observer/releases)
+or download from [releases](https://github.com/zMoooooritz/go-let-observer/releases).
 
 ### Build the project
 
@@ -59,24 +59,28 @@ To start the observer, run the `go-let-observer` command:
 ```bash
 Usage of go-let-observer:
   -config string
-        Path to config file
+        Path to the configuration file
   -host string
         RCON server host
   -password string
         RCON server password
   -port string
         RCON server port
+  -record string
+        Path to the recording directory
+  -replay string
+        Path to the match data JSON file
   -size int
         Screen size (default 1000)
   -version
-        Display version
+        Display version information
 ```
 
 ---
 
 ## 🎮 Keybinds
 
-The keybinds can be configured, the following are the default ones:
+The following keybinds are configured and can be used:
 
 | Keybind              | Description                        |
 |----------------------|------------------------------------|
@@ -87,11 +91,14 @@ The keybinds can be configured, the following are the default ones:
 | `G`                  | Toggle grid overlay                |
 | `H`                  | Toggle header overlay              |
 | `Tab`                | Show scoreboard                    |
+| `Space`              | Toggle replay pause                |
+| `ArrowRight`         | Seek forward in replay             |
+| `ArrowLeft`          | Seek backward in replay            |
 | `Esc`, `Q`, `Ctrl+C` | Exit the application               |
 
 | Mouse action         | Description                        |
 |----------------------|------------------------------------|
-| `LeftClick`          | Select player                      |
+| `LeftClick`          | Select a player                    |
 | `RightClick-Drag`    | Pan the map                        |
 | `MouseWheel`         | Zoom the map                       |
 
