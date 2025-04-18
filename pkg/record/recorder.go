@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	VERSION                = "1.0"
-	FULL_SNAPSHOT_INTERVAL = 2 * time.Minute
+	VERSION                = "1.1"
+	FULL_SNAPSHOT_INTERVAL = 5 * time.Minute
 )
 
 type DataRecorder interface {
@@ -107,8 +107,10 @@ func (mr *MatchRecorder) RecordSnapshot(newData *rcndata.RconDataSnapshot) {
 					PlayerId: int32(existingPlayer.RecordId),
 				}
 				if player.PlanarDistanceTo(oldPlayerData.Position) > 10 {
-					playerDelta.X = int32(player.Position.X)
-					playerDelta.Y = int32(player.Position.Y)
+					deltaX := int32(player.Position.X - oldPlayerData.Position.X)
+					deltaY := int32(player.Position.Y - oldPlayerData.Position.Y)
+					playerDelta.X = deltaX
+					playerDelta.Y = deltaY
 				}
 				if player.Kills != oldPlayerData.Kills {
 					killsDelta := max(int32(player.Kills-oldPlayerData.Kills), 0)

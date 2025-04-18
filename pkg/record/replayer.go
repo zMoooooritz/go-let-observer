@@ -166,8 +166,8 @@ func applyDelta(state *FullSnapshot, delta *DeltaSnapshot) {
 	for _, deltaPlayer := range delta.Players {
 		if player, exists := playerMap[deltaPlayer.PlayerId]; exists {
 			if deltaPlayer.X != 0 || deltaPlayer.Y != 0 {
-				player.X = deltaPlayer.X
-				player.Y = deltaPlayer.Y
+				player.X += deltaPlayer.X
+				player.Y += deltaPlayer.Y
 			}
 			if deltaPlayer.Kills != nil {
 				player.Kills += *deltaPlayer.Kills
