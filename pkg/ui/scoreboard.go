@@ -4,50 +4,69 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
+var (
+	cachedScoreboard     *ebiten.Image
+	lastScoreboardUpdate time.Time
+)
+
+const (
+	SCOREBOARD_WIDTH  = 800
+	SCOREBOARD_HEIGHT = 400
+)
+
 func drawScoreboard(screen *ebiten.Image, playerList []hll.DetailedPlayerInfo) {
-	scoreboardWidth := 800
-	scoreboardHeight := 500
+	currentTime := time.Now()
+	if cachedScoreboard == nil || currentTime.Sub(lastScoreboardUpdate) >= time.Second {
+		cachedScoreboard = ebiten.NewImage(SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT)
+
+		util.DrawScaledRect(cachedScoreboard, 0, 0, SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, CLR_OVERLAY)
+
+		textX := 20
+		textY := 30
+		lineHeight := 30
+		util.DrawText(cachedScoreboard, "Scoreboard (Top 20 Players)", textX, textY, CLR_WHITE, util.Font.Normal)
+		textY += lineHeight
+
+		sortedPlayers := playerList
+		sort.Slice(sortedPlayers, func(i, j int) bool {
+			return sortedPlayers[i].Score.Combat > sortedPlayers[j].Score.Combat
+		})
+
+		util.DrawText(cachedScoreboard, formatScoreboardLine("Rank", "Name", "Kills", "Deaths", "K/D", "Lvl", "Cbt", "Off", "Def", "Sup"), textX, textY, CLR_WHITE, util.Font.Small)
+		textY += 25
+		for i, player := range sortedPlayers {
+			if i >= 20 {
+				break
+			}
+			kdStr := "0.0"
+			if player.Deaths > 0 {
+				kdStr = fmt.Sprintf("%.2f", float32(player.Kills)/float32(player.Deaths))
+			} else {
+				kdStr = fmt.Sprintf("%.2f", float32(player.Kills))
+			}
+			playerInfo := formatScoreboardLine(strconv.Itoa(i+1), player.Name, strconv.Itoa(player.Kills), strconv.Itoa(player.Deaths), kdStr, strconv.Itoa(player.Level),
+				strconv.Itoa(player.Score.Combat), strconv.Itoa(player.Score.Offense), strconv.Itoa(player.Score.Defense), strconv.Itoa(player.Score.Support))
+			util.DrawText(cachedScoreboard, playerInfo, textX, textY, CLR_WHITE, util.Font.Small)
+			textY += 15
+		}
+		lastScoreboardUpdate = currentTime
+	}
+
 	screenWidth := ROOT_SCALING_SIZE
 	screenHeight := ROOT_SCALING_SIZE
-	scoreboardX := (screenWidth - scoreboardWidth) / 2
-	scoreboardY := (screenHeight - scoreboardHeight) / 2
+	scoreboardX := (screenWidth - SCOREBOARD_WIDTH) / 2
+	scoreboardY := (screenHeight - SCOREBOARD_HEIGHT) / 2
 
-	util.DrawScaledRect(screen, scoreboardX, scoreboardY, scoreboardWidth, scoreboardHeight, CLR_OVERLAY)
-
-	textX := scoreboardX + 20
-	textY := scoreboardY + 40
-	lineHeight := 30
-	util.DrawText(screen, "Scoreboard (Top 25 Players)", textX, textY, CLR_WHITE, util.Font.Normal)
-	textY += lineHeight
-
-	sortedPlayers := playerList
-	sort.Slice(sortedPlayers, func(i, j int) bool {
-		return sortedPlayers[i].Score.Combat > sortedPlayers[j].Score.Combat // TODO: sort by kills when data is present in data recv from server
-	})
-
-	util.DrawText(screen, formatScoreboardLine("Rank", "Name", "Kills", "Deaths", "K/D", "Lvl", "Cbt", "Off", "Def", "Sup"), textX, textY, CLR_WHITE, util.Font.Small)
-	textY += 25
-	for i, player := range sortedPlayers {
-		if i >= 25 {
-			break
-		}
-		kdStr := "0.0"
-		if player.Deaths > 0 {
-			kdStr = fmt.Sprintf("%.2f", float32(player.Kills)/float32(player.Deaths))
-		} else {
-			kdStr = fmt.Sprintf("%.2f", float32(player.Kills))
-		}
-		playerInfo := formatScoreboardLine(strconv.Itoa(i+1), player.Name, strconv.Itoa(player.Kills), strconv.Itoa(player.Deaths), kdStr, strconv.Itoa(player.Level),
-			strconv.Itoa(player.Score.Combat), strconv.Itoa(player.Score.Offense), strconv.Itoa(player.Score.Defense), strconv.Itoa(player.Score.Support))
-		util.DrawText(screen, playerInfo, textX, textY, CLR_WHITE, util.Font.Small)
-		textY += 15
-	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(scoreboardX), float64(scoreboardY))
+	screen.DrawImage(cachedScoreboard, op)
 }
 
 func formatScoreboardLine(rank, name, kills, deaths, kd, level, combat, offense, defense, support string) string {

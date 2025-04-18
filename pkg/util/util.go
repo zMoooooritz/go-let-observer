@@ -49,8 +49,12 @@ func DrawScaledRect(screen *ebiten.Image, x, y, width, height int, color color.C
 	vector.DrawFilledRect(screen, scaledX, scaledY, scaledWidth, scaledHeight, color, false)
 }
 
-func ScaledDim(val int) int {
-	return int(float32(val) * ScaleFactor)
+func ScaledDim[T int | float32 | float64](val T) T {
+	return T(float32(val) * ScaleFactor)
+}
+
+func AdaptiveScaledDim[T int | float32 | float64](val T, zoomLevel float64) T {
+	return T(float64(val) * zoomLevel * float64(ScaleFactor))
 }
 
 func IconCircleRadius(zoomLevel float64, sizeModifier float64) float64 {

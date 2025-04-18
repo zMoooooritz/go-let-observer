@@ -45,11 +45,6 @@ func (f *RconDataFetcher) FetchRconDataSnapshot() (*RconDataSnapshot, error) {
 		playerMap[player.ID] = player
 	}
 
-	currMap, err := f.rcon.GetCurrentMap()
-	if err != nil {
-		return nil, err
-	}
-
 	sessionInfo, err := f.rcon.GetSessionInfo()
 	if err != nil {
 		return nil, err
@@ -58,7 +53,7 @@ func (f *RconDataFetcher) FetchRconDataSnapshot() (*RconDataSnapshot, error) {
 	return &RconDataSnapshot{
 		Players:     players,
 		PlayerMap:   playerMap,
-		CurrentMap:  currMap,
+		CurrentMap:  hll.LogMapNameToMap(sessionInfo.MapName),
 		SessionInfo: sessionInfo,
 		FetchTime:   time.Now(),
 	}, nil

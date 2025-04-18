@@ -34,36 +34,49 @@ var (
 		{"RightClick-Drag", "Pan the map"},
 		{"MouseWheel", "Zoom in/out on the map"},
 	}
+
+	helpCache *ebiten.Image
+)
+
+const (
+	HELP_WIDTH  = 600
+	HELP_HEIGHT = 400
 )
 
 func drawHelp(screen *ebiten.Image) {
-	helpWidth := 600
-	helpHeight := 400
+	if helpCache == nil {
+		helpCache = ebiten.NewImage(HELP_WIDTH, HELP_HEIGHT)
+
+		util.DrawScaledRect(helpCache, 0, 0, HELP_WIDTH, HELP_HEIGHT, CLR_OVERLAY)
+
+		textX := 20
+		textY := 30
+		lineHeight := 30
+		util.DrawText(helpCache, "Help", textX, textY, CLR_WHITE, util.Font.Normal)
+		textY += lineHeight
+		textX += 20
+
+		for _, mouseaction := range mouseactions {
+			util.DrawText(helpCache, formatHelpLine(mouseaction.Action, mouseaction.Key), textX, textY, CLR_WHITE, util.Font.Small)
+			textY += 20
+		}
+
+		textY += 20
+
+		for _, keybind := range keybinds {
+			util.DrawText(helpCache, formatHelpLine(keybind.Action, keybind.Key), textX, textY, CLR_WHITE, util.Font.Small)
+			textY += 20
+		}
+	}
+
 	screenWidth := ROOT_SCALING_SIZE
 	screenHeight := ROOT_SCALING_SIZE
-	helpX := (screenWidth - helpWidth) / 2
-	helpY := (screenHeight - helpHeight) / 2
+	helpX := (screenWidth - HELP_WIDTH) / 2
+	helpY := (screenHeight - HELP_HEIGHT) / 2
 
-	util.DrawScaledRect(screen, helpX, helpY, helpWidth, helpHeight, CLR_OVERLAY)
-
-	textX := helpX + 20
-	textY := helpY + 40
-	lineHeight := 30
-	util.DrawText(screen, "Help", textX, textY, CLR_WHITE, util.Font.Normal)
-	textY += lineHeight
-	textX += 20
-
-	for _, mouseaction := range mouseactions {
-		util.DrawText(screen, formatHelpLine(mouseaction.Action, mouseaction.Key), textX, textY, CLR_WHITE, util.Font.Small)
-		textY += 20
-	}
-
-	textY += 20
-
-	for _, keybind := range keybinds {
-		util.DrawText(screen, formatHelpLine(keybind.Action, keybind.Key), textX, textY, CLR_WHITE, util.Font.Small)
-		textY += 20
-	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(helpX), float64(helpY))
+	screen.DrawImage(helpCache, op)
 }
 
 func formatHelpLine(action, key string) string {

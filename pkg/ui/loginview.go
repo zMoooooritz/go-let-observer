@@ -10,7 +10,7 @@ import (
 )
 
 type LoginView struct {
-	backgroundImage *ebiten.Image
+	*BaseViewer
 
 	activeField   int
 	hostInput     string
@@ -18,16 +18,18 @@ type LoginView struct {
 	passwordInput string
 	errorMessage  string
 
-	openMapView func(*rconv2.Rcon, string)
+	openMapView func(int, *rconv2.Rcon, string)
 	recordPath  string
 }
 
-func NewLoginView(openMapView func(*rconv2.Rcon, string), recordPath string) *LoginView {
-	return &LoginView{
-		backgroundImage: util.LoadGreeterImage(),
-		openMapView:     openMapView,
-		recordPath:      recordPath,
+func NewLoginView(bv *BaseViewer, openMapView func(int, *rconv2.Rcon, string), recordPath string) *LoginView {
+	lv := &LoginView{
+		BaseViewer:  bv,
+		openMapView: openMapView,
+		recordPath:  recordPath,
 	}
+	lv.backgroundImage = util.LoadGreeterImage()
+	return lv
 }
 
 func (lv *LoginView) Update() error {
@@ -50,7 +52,7 @@ func (lv *LoginView) Update() error {
 			if err != nil {
 				lv.errorMessage = "Invalid credentials or connection error"
 			} else {
-				lv.openMapView(rcn, lv.recordPath)
+				lv.openMapView(lv.dim.sizeX, rcn, lv.recordPath)
 			}
 		} else {
 			lv.errorMessage = "All fields are required"
@@ -91,18 +93,7 @@ func (lv *LoginView) Update() error {
 }
 
 func (lv *LoginView) Draw(screen *ebiten.Image) {
-	screenSize := screen.Bounds().Size()
-
-	if lv.backgroundImage != nil {
-		imageSize := lv.backgroundImage.Bounds().Size()
-		imageScale := float64(screenSize.X) / float64(imageSize.X)
-
-		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Scale(imageScale, imageScale)
-		screen.DrawImage(lv.backgroundImage, options)
-	} else {
-		screen.Fill(color.RGBA{31, 31, 31, 255})
-	}
+	lv.DrawBackground(screen)
 
 	util.DrawScaledRect(screen, 0, 0, 1000, 400, CLR_OVERLAY)
 

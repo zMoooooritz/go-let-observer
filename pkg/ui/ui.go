@@ -38,24 +38,17 @@ var (
 	CLR_BLACK        = color.RGBA{0, 0, 0, 255}
 	CLR_WHITE        = color.RGBA{255, 255, 255, 255}
 	CLR_OVERLAY      = color.RGBA{0, 0, 0, 200}
+
+	FALLBACK_BACKGROUND = color.RGBA{31, 31, 31, 255}
 )
-
-type ViewDimension struct {
-	sizeX int
-	sizeY int
-}
-
-func (vd *ViewDimension) getDims() (int, int) {
-	return vd.sizeX, vd.sizeY
-}
 
 type State interface {
 	Update() error
 	Draw(screen *ebiten.Image)
+	Layout(outsideWidth, outsideHeight int) (int, int)
 }
 
 type UI struct {
-	dim   *ViewDimension
 	state State
 }
 
@@ -91,22 +84,17 @@ func getFetcherAndRecorder(rcon *rconv2.Rcon, recordPath string, replayPath stri
 func NewUI(size int, rcon *rconv2.Rcon, recordPath string, replayPath string) *UI {
 	util.ScaleFactor = float32(size) / float32(ROOT_SCALING_SIZE)
 
-	dim := &ViewDimension{
-		sizeX: size,
-		sizeY: size,
-	}
-
-	ui := &UI{
-		dim: dim,
-	}
+	ui := &UI{}
 
 	dataFetcher, dataRecorder := getFetcherAndRecorder(rcon, recordPath, replayPath)
 	showLoginView := rcon == nil && replayPath == ""
 
+	bv := NewBaseViewer(size)
+
 	if showLoginView {
-		ui.state = NewLoginView(ui.openMapView, recordPath)
+		ui.state = NewLoginView(bv, ui.openMapView, recordPath)
 	} else {
-		ui.state = NewMapView(dataFetcher, dataRecorder, dim.getDims)
+		ui.state = NewMapView(bv, dataFetcher, dataRecorder)
 	}
 
 	return ui
@@ -122,10 +110,11 @@ func (ui *UI) Draw(screen *ebiten.Image) {
 }
 
 func (ui *UI) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return ui.dim.sizeX, ui.dim.sizeX
+	return ui.state.Layout(outsideWidth, outsideHeight)
 }
 
-func (ui *UI) openMapView(rcon *rconv2.Rcon, recordPath string) {
+func (ui *UI) openMapView(size int, rcon *rconv2.Rcon, recordPath string) {
 	dataFetcher, dataRecorder := getFetcherAndRecorder(rcon, recordPath, "")
-	ui.state = NewMapView(dataFetcher, dataRecorder, ui.dim.getDims)
+	bv := NewBaseViewer(size)
+	ui.state = NewMapView(bv, dataFetcher, dataRecorder)
 }

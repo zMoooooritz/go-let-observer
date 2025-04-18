@@ -2,34 +2,54 @@ package ui
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
+var (
+	cachedServerName      *ebiten.Image
+	lastServerName        time.Time
+	cachedPlayerCount     *ebiten.Image
+	lastPlayerCountUpdate time.Time
+)
+
 func drawServerName(screen *ebiten.Image, serverName string) {
-	overlayWidth := 750
-	overlayHeight := 50
-	overlayX := 0
-	overlayY := 0
+	currentTime := time.Now()
+	if cachedServerName == nil || currentTime.Sub(lastServerName) >= time.Second {
+		overlayWidth := 750
+		overlayHeight := 50
+		cachedServerName = ebiten.NewImage(overlayWidth, overlayHeight)
 
-	util.DrawScaledRect(screen, overlayX, overlayY, overlayWidth, overlayHeight, CLR_OVERLAY)
+		util.DrawScaledRect(cachedServerName, 0, 0, overlayWidth, overlayHeight, CLR_OVERLAY)
 
-	textX := overlayX + 10
-	textY := overlayY + 30
-	util.DrawText(screen, serverName, textX, textY, CLR_WHITE, util.Font.Normal)
+		textX := 10
+		textY := 30
+		util.DrawText(cachedServerName, serverName, textX, textY, CLR_WHITE, util.Font.Normal)
+		lastServerName = currentTime
+	}
+
+	screen.DrawImage(cachedServerName, nil)
 }
 
 func drawPlayerCount(screen *ebiten.Image, playerCurrCount, playerMaxCount int) {
-	overlayWidth := 200
-	overlayHeight := 50
-	overlayX := 0
-	overlayY := 50
+	currentTime := time.Now()
+	if cachedPlayerCount == nil || currentTime.Sub(lastPlayerCountUpdate) >= time.Second {
+		overlayWidth := 200
+		overlayHeight := 50
+		cachedPlayerCount = ebiten.NewImage(overlayWidth, overlayHeight)
 
-	util.DrawScaledRect(screen, overlayX, overlayY, overlayWidth, overlayHeight, CLR_OVERLAY)
+		util.DrawScaledRect(cachedPlayerCount, 0, 0, overlayWidth, overlayHeight, CLR_OVERLAY)
 
-	textX := overlayX + 10
-	textY := overlayY + 30
-	info := fmt.Sprintf("Players: %d/%d", playerCurrCount, playerMaxCount)
-	util.DrawText(screen, info, textX, textY, CLR_WHITE, util.Font.Normal)
+		textX := 10
+		textY := 30
+		info := fmt.Sprintf("Players: %d/%d", playerCurrCount, playerMaxCount)
+		util.DrawText(cachedPlayerCount, info, textX, textY, CLR_WHITE, util.Font.Normal)
+		lastPlayerCountUpdate = currentTime
+	}
+
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, 50)
+	screen.DrawImage(cachedPlayerCount, op)
 }
