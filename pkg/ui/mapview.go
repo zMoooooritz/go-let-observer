@@ -29,6 +29,7 @@ type MapViewState struct {
 	showPlayers       bool
 	showPlayerInfo    bool
 	showSpawns        bool
+	showTanks         bool
 	showHelp          bool
 	showScoreboard    bool
 	initialDataLoaded bool
@@ -56,6 +57,7 @@ type RconData struct {
 	playerMaxCount        int
 	playerMap             map[string]hll.DetailedPlayerInfo
 	playerList            []hll.DetailedPlayerInfo
+	serverView            *hll.ServerView
 	spawnTracker          *rcndata.SpawnTracker
 }
 
@@ -81,6 +83,7 @@ func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder re
 			showPlayers:    util.Config.UIStartupOptions.ShowPlayers,
 			showPlayerInfo: util.Config.UIStartupOptions.ShowPlayerInfo,
 			showSpawns:     util.Config.UIStartupOptions.ShowSpawns,
+			showTanks:      util.Config.UIStartupOptions.ShowTanks,
 		},
 		FetchState: FetchState{
 			intervalIndex: INITIAL_FETCH_STEP,
@@ -152,6 +155,10 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 		drawPlayers(screen, mv.dim, mv.roleImages, mv.playerList, mv.selectedPlayerID)
 	}
 
+	if mv.showTanks {
+		drawTankSquads(screen, mv.dim, mv.roleImages, mv.serverView, mv.selectedPlayerID)
+	}
+
 	if mv.showHelp {
 		drawHelp(screen)
 	} else if mv.showScoreboard {
@@ -187,6 +194,10 @@ func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
 			}
 		}
 	}
+
+	serverView := hll.PlayersToServerView(snapshot.Players)
+	mv.serverView = serverView
+
 	sort.Slice(snapshot.Players, func(i, j int) bool {
 		return snapshot.Players[i].ID > snapshot.Players[j].ID
 	})

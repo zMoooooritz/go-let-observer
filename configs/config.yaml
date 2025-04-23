@@ -11,5 +11,6 @@ UIStartupOptions:
   ShowPlayers: true
   ShowPlayerInfo: true
   ShowSpawns: false
+  ShowTanks: true
   ShowGridOverlay: true
   ShowServerInfoOverlay: false

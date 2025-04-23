@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	RCON_WORKER_COUNT = 5
+	RCON_WORKER_COUNT = 3
 
 	MIN_ZOOM_LEVEL       = 1.0
 	MAX_ZOOM_LEVEL       = 10.0
@@ -24,20 +24,25 @@ const (
 
 	PLAYER_SIZE_MODIFIER          = 1.0
 	SELECTED_PLAYER_SIZE_MODIFIER = 1.1
+	TANK_SIZE_MODIFIER            = 1.2
 	SPAWN_SIZE_MODIFIER           = 1.2
+	TANK_ICON_SIZE_MODIFIER       = 1.8
 
 	INITIAL_FETCH_STEP = 2
 )
 
 var (
-	CLR_AXIS         = color.RGBA{255, 0, 0, 255}
-	CLR_ALLIES       = color.RGBA{0, 0, 255, 255}
-	CLR_AXIS_SPAWN   = color.RGBA{180, 0, 30, 255}
-	CLR_ALLIES_SPAWN = color.RGBA{0, 0, 180, 255}
-	CLR_SELECTED     = color.RGBA{0, 255, 0, 255}
-	CLR_BLACK        = color.RGBA{0, 0, 0, 255}
-	CLR_WHITE        = color.RGBA{255, 255, 255, 255}
-	CLR_OVERLAY      = color.RGBA{0, 0, 0, 200}
+	CLR_AXIS_LIGHT     = color.RGBA{255, 120, 120, 255}
+	CLR_AXIS           = color.RGBA{255, 0, 0, 255}
+	CLR_AXIS_DARK      = color.RGBA{180, 0, 30, 255}
+	CLR_ALLIES_LIGHT   = color.RGBA{120, 120, 255, 255}
+	CLR_ALLIES         = color.RGBA{0, 0, 255, 255}
+	CLR_ALLIES_DARK    = color.RGBA{0, 0, 180, 255}
+	CLR_SELECTED_LIGHT = color.RGBA{120, 255, 120, 255}
+	CLR_SELECTED       = color.RGBA{0, 255, 0, 255}
+	CLR_BLACK          = color.RGBA{0, 0, 0, 255}
+	CLR_WHITE          = color.RGBA{255, 255, 255, 255}
+	CLR_OVERLAY        = color.RGBA{0, 0, 0, 200}
 
 	FALLBACK_BACKGROUND = color.RGBA{31, 31, 31, 255}
 )

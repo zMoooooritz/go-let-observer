@@ -85,12 +85,17 @@ func (mv *MapView) handleKeyboardInput() {
 		if typedKey == "p" {
 			mv.showPlayers = !mv.showPlayers
 		}
+
 		if typedKey == "i" {
 			mv.showPlayerInfo = !mv.showPlayerInfo
 		}
 
 		if typedKey == "s" {
 			mv.showSpawns = !mv.showSpawns
+		}
+
+		if typedKey == "t" {
+			mv.showTanks = !mv.showTanks
 		}
 
 		if typedKey == "h" {

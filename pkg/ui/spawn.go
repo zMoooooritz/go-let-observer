@@ -17,9 +17,9 @@ func drawSpawns(screen *ebiten.Image, spawns []rcndata.SpawnPoint, spawnImages m
 		x = x*vd.zoomLevel + vd.panX
 		y = y*vd.zoomLevel + vd.panY
 
-		clr := CLR_ALLIES_SPAWN
+		clr := CLR_ALLIES_DARK
 		if spawn.Team == hll.TmAxis {
-			clr = CLR_AXIS_SPAWN
+			clr = CLR_AXIS_DARK
 		}
 
 		rectSize := int(2 * util.IconCircleRadius(vd.zoomLevel, SPAWN_SIZE_MODIFIER))
