@@ -6,13 +6,13 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/zMoooooritz/go-let-observer/build.yml?branch=master&style=for-the-badge)](https://github.com/zMoooooritz/nachrichten/actions)
 [![Go ReportCard](https://goreportcard.com/badge/github.com/zMoooooritz/go-let-observer?style=for-the-badge)](https://goreportcard.com/report/zMoooooritz/go-let-observer)
 
-A **Go-based observer tool** for the game **Hell Let Loose**, providing a graphical interface to monitor server and player data in real time.
+An **observer tool** for the game **Hell Let Loose**, providing a graphical interface to monitor server and player data in real time.
 
 ---
 
 ## 📸 Preview
 
-| ![HLL-Observer-1](https://github.com/user-attachments/assets/552786c2-6c72-4061-914a-44a07bc1c5e1) | ![HLL-Observer-3](https://github.com/user-attachments/assets/3a550c31-db05-4903-9040-afc53df1c400) |
+| ![HLL-Observer-1](https://github.com/user-attachments/assets/552786c2-6c72-4061-914a-44a07bc1c5e1) | ![HLL-Observer-4](https://github.com/user-attachments/assets/522bd0b8-b446-4956-9539-65678e1d862d) |
 |:--------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------|
 
 ---
@@ -22,7 +22,7 @@ A **Go-based observer tool** for the game **Hell Let Loose**, providing a graphi
 - **Real-time player information**: Displays detailed player stats, including name, role, team, and more.
 - **Server monitoring**: View server name, map details, and player counts.
 - **Interactive map view**: Zoom, pan, and toggle overlays.
-- **Recording and Replaying**: Record gameplay or actions and replay them for analysis or debugging.
+- **Recording and Replaying**: Record gameplay or actions and replay them for analysis
 
 ---
 
