@@ -6,6 +6,8 @@ import (
 	"log"
 	"strings"
 
+	_ "image/png"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"github.com/zMoooooritz/go-let-observer/assets"
@@ -21,13 +23,13 @@ func LoadRoleImages() map[string]*ebiten.Image {
 		roleName := strings.ToLower(string(hll.RoleFromInt(index)))
 		imgData, err := assets.Assets.ReadFile("roles/" + roleName + ".png")
 		if err != nil {
-			log.Printf("Error loading role image for %s: %v", roleName, err)
+			log.Printf("Error loading role image for %s: %v\n", roleName, err)
 			continue
 		}
 
 		img, _, err := image.Decode(bytes.NewReader(imgData))
 		if err != nil {
-			log.Printf("Error loading role image for %s: %v", roleName, err)
+			log.Printf("Error loading role image for %s: %v\n", roleName, err)
 			continue
 		}
 		roleImages[roleName] = ebiten.NewImageFromImage(img)
@@ -41,13 +43,13 @@ func LoadSpawnImages() map[string]*ebiten.Image {
 	for _, spawnType := range spawnTypes {
 		imgData, err := assets.Assets.ReadFile("spawns/" + spawnType + ".png")
 		if err != nil {
-			log.Printf("Error loading role image for %s: %v", spawnType, err)
+			log.Printf("Error loading role image for %s: %v\n", spawnType, err)
 			continue
 		}
 
 		img, _, err := image.Decode(bytes.NewReader(imgData))
 		if err != nil {
-			log.Printf("Error loading role image for %s: %v", spawnType, err)
+			log.Printf("Error loading role image for %s: %v\n", spawnType, err)
 			continue
 		}
 		spawnImages[spawnType] = ebiten.NewImageFromImage(img)
@@ -71,11 +73,13 @@ func LoadMapImage(mapName string) (*ebiten.Image, error) {
 func LoadGreeterImage() *ebiten.Image {
 	imgData, err := assets.Assets.ReadFile("image/greeter.png")
 	if err != nil {
+		log.Printf("Error loading greeter image: %v\n", err)
 		return nil
 	}
 
 	img, _, err := image.Decode(bytes.NewReader(imgData))
 	if err != nil {
+		log.Printf("Error decoding greeter image: %v\n", err)
 		return nil
 	}
 	return ebiten.NewImageFromImage(img)

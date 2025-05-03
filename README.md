@@ -59,17 +59,17 @@ To start the observer, run the `go-let-observer` command:
 ```bash
 Usage of go-let-observer:
   -config string
-        Path to the configuration file
+        Path to configuration file
+  -directory string
+        Path to the replays directory
   -host string
         RCON server host
+  -mode string
+        Mode to run on startup (viewer, replay, record)
   -password string
         RCON server password
   -port string
         RCON server port
-  -record string
-        Path to the recording directory
-  -replay string
-        Path to the match data JSON file
   -size int
         Screen size (default 1000)
   -version

@@ -12,21 +12,19 @@ import (
 type LoginView struct {
 	*BaseViewer
 
+	targetMode PresentationMode
+
 	activeField   int
 	hostInput     string
 	portInput     string
 	passwordInput string
 	errorMessage  string
-
-	openMapView func(int, *rconv2.Rcon, string)
-	recordPath  string
 }
 
-func NewLoginView(bv *BaseViewer, openMapView func(int, *rconv2.Rcon, string), recordPath string) *LoginView {
+func NewLoginView(bv *BaseViewer, targetMode PresentationMode) *LoginView {
 	lv := &LoginView{
-		BaseViewer:  bv,
-		openMapView: openMapView,
-		recordPath:  recordPath,
+		BaseViewer: bv,
+		targetMode: targetMode,
 	}
 	lv.backgroundImage = util.LoadGreeterImage()
 	return lv
@@ -48,11 +46,13 @@ func (lv *LoginView) Update() error {
 				Port:     lv.portInput,
 				Password: lv.passwordInput,
 			}
-			rcn, err := rconv2.NewRcon(cfg, RCON_WORKER_COUNT)
+
+			bv := NewBaseViewer(lv.ctx)
+			state, err := createState(bv, lv.targetMode, &cfg)
 			if err != nil {
 				lv.errorMessage = "Invalid credentials or connection error"
 			} else {
-				lv.openMapView(lv.dim.sizeX, rcn, lv.recordPath)
+				lv.ctx.TransitionTo(state)
 			}
 		} else {
 			lv.errorMessage = "All fields are required"

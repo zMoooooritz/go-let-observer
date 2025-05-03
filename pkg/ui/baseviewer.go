@@ -2,6 +2,7 @@ package ui
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
 type ViewDimension struct {
@@ -21,18 +22,20 @@ func (vd *ViewDimension) FrustumSize() (float64, float64) {
 type BaseViewer struct {
 	backgroundImage *ebiten.Image
 	dim             *ViewDimension
+	ctx             StateContext
 }
 
-func NewBaseViewer(size int) *BaseViewer {
+func NewBaseViewer(ctx StateContext) *BaseViewer {
 	return &BaseViewer{
 		backgroundImage: nil,
 		dim: &ViewDimension{
-			sizeX:     size,
-			sizeY:     size,
+			sizeX:     util.Config.UIOptions.ScreenSize,
+			sizeY:     util.Config.UIOptions.ScreenSize,
 			zoomLevel: MIN_ZOOM_LEVEL,
 			panX:      0.0,
 			panY:      0.0,
 		},
+		ctx: ctx,
 	}
 }
 

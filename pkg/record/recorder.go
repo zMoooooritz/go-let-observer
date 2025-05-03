@@ -29,6 +29,10 @@ func (nr *NoRecorder) RecordSnapshot(data *rcndata.RconDataSnapshot) {}
 func (nr *NoRecorder) MapChanged(newMap hll.GameMap)                 {}
 func (nr *NoRecorder) Stop()                                         {}
 
+func NewNoRecorder() *NoRecorder {
+	return &NoRecorder{}
+}
+
 type MatchRecorder struct {
 	recordPath           string
 	isRecording          bool

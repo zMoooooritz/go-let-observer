@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
 	"gopkg.in/yaml.v3"
 )
 
@@ -13,7 +14,16 @@ var (
 
 type Configuration struct {
 	ServerCredentials ServerCredentials `yaml:"ServerCredentials"`
-	UIStartupOptions  UIStartupOptions  `yaml:"UIStartupOptions"`
+	UIOptions         UIOptions         `yaml:"UIStartupOptions"`
+	ReplaysDirectory  string            `yaml:"ReplaysDirectory"`
+}
+
+func (c *Configuration) GetServerCredentials() rconv2.ServerConfig {
+	return rconv2.ServerConfig{
+		Host:     c.ServerCredentials.Host,
+		Port:     c.ServerCredentials.Port,
+		Password: c.ServerCredentials.Password,
+	}
 }
 
 type ServerCredentials struct {
@@ -22,7 +32,7 @@ type ServerCredentials struct {
 	Password string `yaml:"Password"`
 }
 
-type UIStartupOptions struct {
+type UIOptions struct {
 	ScreenSize            int  `yaml:"ScreenSize"`
 	ShowPlayers           bool `yaml:"ShowPlayers"`
 	ShowPlayerInfo        bool `yaml:"ShowPlayerInfo"`
@@ -53,7 +63,7 @@ func InitConfig(configFile string) error {
 
 func defaultConfiguration() *Configuration {
 	return &Configuration{
-		UIStartupOptions: UIStartupOptions{
+		UIOptions: UIOptions{
 			ScreenSize:            1000,
 			ShowPlayers:           true,
 			ShowPlayerInfo:        true,

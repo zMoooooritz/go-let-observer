@@ -2,7 +2,6 @@ package ui
 
 import (
 	"image/color"
-	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
@@ -31,6 +30,15 @@ const (
 	INITIAL_FETCH_STEP = 2
 )
 
+type PresentationMode string
+
+const (
+	MODE_VIEWER PresentationMode = "viewer"
+	MODE_REPLAY PresentationMode = "replay"
+	MODE_RECORD PresentationMode = "record"
+	MODE_NONE   PresentationMode = ""
+)
+
 var (
 	CLR_AXIS_LIGHT     = color.RGBA{255, 120, 120, 255}
 	CLR_AXIS           = color.RGBA{255, 0, 0, 255}
@@ -53,60 +61,39 @@ type State interface {
 	Layout(outsideWidth, outsideHeight int) (int, int)
 }
 
+type StateContext interface {
+	TransitionTo(newState State)
+}
+
 type UI struct {
 	state State
 }
 
-func getFetcherAndRecorder(rcon *rconv2.Rcon, recordPath string, replayPath string) (rcndata.DataFetcher, record.DataRecorder) {
-	var dataFetcher rcndata.DataFetcher
-	if replayPath == "" {
-		dataFetcher = rcndata.NewRconDataFetcher(rcon)
-	} else {
-		var err error
-		dataFetcher, err = record.NewMatchReplayer(replayPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	var dataRecorder record.DataRecorder
-	if recordPath != "" {
-		currMap, err := rcon.GetCurrentMap()
-		if err != nil {
-			log.Fatal(err)
-		}
-		dataRecorder, err = record.NewMatchRecorder(recordPath, currMap)
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		dataRecorder = &record.NoRecorder{}
-	}
-
-	return dataFetcher, dataRecorder
-}
-
-func NewUI(size int, rcon *rconv2.Rcon, recordPath string, replayPath string) *UI {
-	util.ScaleFactor = float32(size) / float32(ROOT_SCALING_SIZE)
+func NewUI(mode PresentationMode) *UI {
+	util.ScaleFactor = float32(util.Config.UIOptions.ScreenSize) / float32(ROOT_SCALING_SIZE)
 
 	ui := &UI{}
+	bv := NewBaseViewer(ui)
 
-	dataFetcher, dataRecorder := getFetcherAndRecorder(rcon, recordPath, replayPath)
-	showLoginView := rcon == nil && replayPath == ""
-
-	bv := NewBaseViewer(size)
-
-	if showLoginView {
-		ui.state = NewLoginView(bv, ui.openMapView, recordPath)
-	} else {
-		ui.state = NewMapView(bv, dataFetcher, dataRecorder)
+	switch mode {
+	case MODE_NONE:
+		ui.state = NewMainMenu(bv)
+	case MODE_VIEWER:
+		ui.state, _ = createState(bv, MODE_VIEWER, nil)
+	case MODE_RECORD:
+		ui.state, _ = createState(bv, MODE_RECORD, nil)
+	case MODE_REPLAY:
+		ui.state = NewReplayView(bv)
 	}
 
 	return ui
 }
 
-func (ui *UI) Update() error {
+func (ui *UI) TransitionTo(newState State) {
+	ui.state = newState
+}
 
+func (ui *UI) Update() error {
 	return ui.state.Update()
 }
 
@@ -118,8 +105,24 @@ func (ui *UI) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return ui.state.Layout(outsideWidth, outsideHeight)
 }
 
-func (ui *UI) openMapView(size int, rcon *rconv2.Rcon, recordPath string) {
-	dataFetcher, dataRecorder := getFetcherAndRecorder(rcon, recordPath, "")
-	bv := NewBaseViewer(size)
-	ui.state = NewMapView(bv, dataFetcher, dataRecorder)
+func createState(bv *BaseViewer, targetMode PresentationMode, rconCreds *rconv2.ServerConfig) (State, error) {
+	if rconCreds == nil {
+		creds := util.Config.GetServerCredentials()
+		rconCreds = &creds
+	}
+	rcn, rcnErr := rconv2.NewRcon(*rconCreds, RCON_WORKER_COUNT)
+	if rcnErr == nil {
+		dataFetcher := rcndata.NewRconDataFetcher(rcn)
+
+		var dataRecorder record.DataRecorder
+		if targetMode == MODE_VIEWER {
+			dataRecorder = record.NewNoRecorder()
+		} else {
+			currMap, _ := rcn.GetCurrentMap()
+			dataRecorder, _ = record.NewMatchRecorder(util.Config.ReplaysDirectory, currMap)
+		}
+
+		return NewMapView(bv, dataFetcher, dataRecorder), nil
+	}
+	return NewLoginView(bv, targetMode), rcnErr
 }

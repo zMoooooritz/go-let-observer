@@ -75,15 +75,15 @@ type MapView struct {
 }
 
 func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder record.DataRecorder) *MapView {
-	return &MapView{
+	mv := &MapView{
 		BaseViewer: bv,
 		MapViewState: MapViewState{
-			showServerInfo: util.Config.UIStartupOptions.ShowServerInfoOverlay,
-			showGrid:       util.Config.UIStartupOptions.ShowGridOverlay,
-			showPlayers:    util.Config.UIStartupOptions.ShowPlayers,
-			showPlayerInfo: util.Config.UIStartupOptions.ShowPlayerInfo,
-			showSpawns:     util.Config.UIStartupOptions.ShowSpawns,
-			showTanks:      util.Config.UIStartupOptions.ShowTanks,
+			showServerInfo: util.Config.UIOptions.ShowServerInfoOverlay,
+			showGrid:       util.Config.UIOptions.ShowGridOverlay,
+			showPlayers:    util.Config.UIOptions.ShowPlayers,
+			showPlayerInfo: util.Config.UIOptions.ShowPlayerInfo,
+			showSpawns:     util.Config.UIOptions.ShowSpawns,
+			showTanks:      util.Config.UIOptions.ShowTanks,
 		},
 		FetchState: FetchState{
 			intervalIndex: INITIAL_FETCH_STEP,
@@ -96,6 +96,8 @@ func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder re
 		dataFetcher:  dataFetcher,
 		dataRecorder: dataRecorder,
 	}
+	mv.backgroundImage = util.LoadGreeterImage()
+	return mv
 }
 
 func (mv *MapView) Update() error {
