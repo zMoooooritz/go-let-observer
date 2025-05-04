@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"time"
 	"unicode"
 
@@ -80,38 +81,46 @@ func (mv *MapView) handleKeyboardInput() {
 
 		if typedKey == "g" {
 			mv.showGrid = !mv.showGrid
+			mv.notifications.Push(fmt.Sprintf("Show Grid: %t", mv.showGrid))
 		}
 
 		if typedKey == "p" {
 			mv.showPlayers = !mv.showPlayers
+			mv.notifications.Push(fmt.Sprintf("Show Players: %t", mv.showPlayers))
 		}
 
 		if typedKey == "i" {
 			mv.showPlayerInfo = !mv.showPlayerInfo
+			mv.notifications.Push(fmt.Sprintf("Show Player Info: %t", mv.showPlayerInfo))
 		}
 
 		if typedKey == "s" {
 			mv.showSpawns = !mv.showSpawns
+			mv.notifications.Push(fmt.Sprintf("Show Spawns: %t", mv.showSpawns))
 		}
 
 		if typedKey == "t" {
 			mv.showTanks = !mv.showTanks
+			mv.notifications.Push(fmt.Sprintf("Show Tanks: %t", mv.showTanks))
 		}
 
 		if typedKey == "h" {
 			mv.showServerInfo = !mv.showServerInfo
+			mv.notifications.Push(fmt.Sprintf("Show Server Info: %t", mv.showServerInfo))
 		}
 
 		if typedKey == "+" {
 			if mv.intervalIndex < len(fetchIntervalSteps)-1 {
 				mv.intervalIndex++
 			}
+			mv.notifications.Push(fmt.Sprintf("Fetch-Interval: %s", fetchIntervalSteps[mv.intervalIndex]))
 		}
 
 		if typedKey == "-" {
 			if mv.intervalIndex > 0 {
 				mv.intervalIndex--
 			}
+			mv.notifications.Push(fmt.Sprintf("Fetch-Interval: %s", fetchIntervalSteps[mv.intervalIndex]))
 		}
 
 		if typedKey == "?" {

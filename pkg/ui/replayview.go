@@ -49,28 +49,28 @@ func (rv *ReplayView) Update() error {
 		return ebiten.Termination
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) || inpututil.IsKeyJustPressed(ebiten.KeyJ) {
-		rv.selectedReplay = (rv.selectedReplay + 1) % len(rv.replays)
-		if rv.selectedReplay >= rv.visibleStart+rv.visibleCount {
-			rv.visibleStart++
+	if len(rv.replays) > 0 {
+		if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) || inpututil.IsKeyJustPressed(ebiten.KeyJ) {
+			rv.selectedReplay = (rv.selectedReplay + 1) % len(rv.replays)
+			if rv.selectedReplay >= rv.visibleStart+rv.visibleCount {
+				rv.visibleStart++
+			}
+			if rv.selectedReplay == 0 {
+				rv.visibleStart = 0
+			}
 		}
-		if rv.selectedReplay == 0 {
-			rv.visibleStart = 0
-		}
-	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) || inpututil.IsKeyJustPressed(ebiten.KeyK) {
-		rv.selectedReplay = (rv.selectedReplay - 1 + len(rv.replays)) % len(rv.replays)
-		if rv.selectedReplay < rv.visibleStart {
-			rv.visibleStart--
+		if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) || inpututil.IsKeyJustPressed(ebiten.KeyK) {
+			rv.selectedReplay = (rv.selectedReplay - 1 + len(rv.replays)) % len(rv.replays)
+			if rv.selectedReplay < rv.visibleStart {
+				rv.visibleStart--
+			}
+			if rv.selectedReplay == len(rv.replays)-1 {
+				rv.visibleStart = len(rv.replays) - rv.visibleCount
+			}
 		}
-		if rv.selectedReplay == len(rv.replays)-1 {
-			rv.visibleStart = len(rv.replays) - rv.visibleCount
-		}
-	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		if len(rv.replays) > 0 {
+		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 			replay := rv.replays[rv.selectedReplay]
 			bv := NewBaseViewer(rv.ctx)
 			dataFetcher, err := record.NewMatchReplayer(path.Join(util.Config.ReplaysDirectory, replay))
@@ -97,17 +97,21 @@ func (rv *ReplayView) Draw(screen *ebiten.Image) {
 
 	util.DrawText(screen, "Select a Replay", 20, 40, CLR_WHITE, util.Font.Title)
 
-	for i := rv.visibleStart; i < rv.visibleStart+rv.visibleCount && i < len(rv.replays); i++ {
-		color := CLR_WHITE
-		if i == rv.selectedReplay {
-			color = CLR_SELECTED
+	if len(rv.replays) == 0 {
+		util.DrawText(screen, "No replays found", 50, 100, color.Gray{Y: 200}, util.Font.Normal)
+	} else {
+		for i := rv.visibleStart; i < rv.visibleStart+rv.visibleCount && i < len(rv.replays); i++ {
+			color := CLR_WHITE
+			if i == rv.selectedReplay {
+				color = CLR_SELECTED
+			}
+			util.DrawText(screen, rv.replays[i], 50, 100+(i-rv.visibleStart)*40, color, util.Font.Normal)
 		}
-		util.DrawText(screen, rv.replays[i], 50, 100+(i-rv.visibleStart)*40, color, util.Font.Normal)
-	}
 
-	if rv.errorMessage != "" {
-		util.DrawText(screen, rv.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, util.Font.Normal)
-	}
+		if rv.errorMessage != "" {
+			util.DrawText(screen, rv.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, util.Font.Normal)
+		}
 
-	util.DrawText(screen, "Use Arrow Keys to navigate, Enter to select", 50, 340, color.Gray{Y: 200}, util.Font.Normal)
+		util.DrawText(screen, "Use Arrow Keys to navigate, Enter to select", 50, 340, color.Gray{Y: 200}, util.Font.Normal)
+	}
 }

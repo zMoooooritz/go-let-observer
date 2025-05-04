@@ -72,6 +72,8 @@ type MapView struct {
 
 	dataFetcher  rcndata.DataFetcher
 	dataRecorder record.DataRecorder
+
+	notifications *NotificationManager
 }
 
 func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder record.DataRecorder) *MapView {
@@ -91,10 +93,11 @@ func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder re
 		RconData: RconData{
 			spawnTracker: rcndata.NewSpawnTracker(),
 		},
-		roleImages:   util.LoadRoleImages(),
-		spawnImages:  util.LoadSpawnImages(),
-		dataFetcher:  dataFetcher,
-		dataRecorder: dataRecorder,
+		roleImages:    util.LoadRoleImages(),
+		spawnImages:   util.LoadSpawnImages(),
+		dataFetcher:   dataFetcher,
+		dataRecorder:  dataRecorder,
+		notifications: NewNotificationManager(),
 	}
 	mv.backgroundImage = util.LoadGreeterImage()
 	return mv
@@ -134,6 +137,8 @@ func (mv *MapView) Update() error {
 
 	mv.handleKeyboardInput()
 	mv.handleMouseInput()
+
+	mv.notifications.Update()
 
 	return nil
 }
@@ -183,6 +188,8 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 
 		drawProgressBar(screen, progress)
 	}
+
+	mv.notifications.Draw(screen)
 }
 
 func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
