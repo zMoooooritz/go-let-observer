@@ -1,10 +1,11 @@
-package ui
+package views
 
 import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -61,17 +62,17 @@ func (mm *MainMenu) Update() error {
 func (mm *MainMenu) Draw(screen *ebiten.Image) {
 	mm.DrawBackground(screen)
 
-	util.DrawScaledRect(screen, 0, 0, 1000, 400, CLR_OVERLAY)
+	util.DrawScaledRect(screen, 0, 0, 1000, 400, shared.CLR_OVERLAY)
 
-	util.DrawText(screen, "HLL Observer", 20, 40, CLR_WHITE, util.Font.Title)
+	util.DrawText(screen, "HLL Observer", 20, 40, shared.CLR_WHITE, util.Font.Title)
 
 	options := mm.getMenuOptions()
 	for i, option := range options {
-		var clr color.Color = CLR_WHITE
+		var clr color.Color = shared.CLR_WHITE
 		if !option.Enabled {
 			clr = color.Gray{Y: 128}
 		} else if i == mm.selectedOption {
-			clr = CLR_SELECTED
+			clr = shared.CLR_SELECTED
 		}
 		util.DrawText(screen, option.Label, 50, 100+i*40, clr, util.Font.Normal)
 	}
@@ -88,7 +89,7 @@ func (mm *MainMenu) getMenuOptions() []MenuOption {
 			Enabled: true,
 			Action: func() error {
 				bv := NewBaseViewer(mm.ctx)
-				state, _ := createState(bv, MODE_VIEWER, nil)
+				state, _ := CreateState(bv, shared.MODE_VIEWER, nil)
 				mm.ctx.TransitionTo(state)
 				return nil
 			},
@@ -98,7 +99,7 @@ func (mm *MainMenu) getMenuOptions() []MenuOption {
 			Enabled: replayDirConfigured,
 			Action: func() error {
 				bv := NewBaseViewer(mm.ctx)
-				state, _ := createState(bv, MODE_RECORD, nil)
+				state, _ := CreateState(bv, shared.MODE_RECORD, nil)
 				mm.ctx.TransitionTo(state)
 				return nil
 			},

@@ -1,4 +1,4 @@
-package ui
+package components
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -21,17 +22,17 @@ const (
 	SCOREBOARD_HEIGHT = 400
 )
 
-func drawScoreboard(screen *ebiten.Image, playerList []hll.DetailedPlayerInfo) {
+func DrawScoreboard(screen *ebiten.Image, playerList []hll.DetailedPlayerInfo) {
 	currentTime := time.Now()
 	if cachedScoreboard == nil || currentTime.Sub(lastScoreboardUpdate) >= time.Second {
 		cachedScoreboard = ebiten.NewImage(SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT)
 
-		util.DrawScaledRect(cachedScoreboard, 0, 0, SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, CLR_OVERLAY)
+		util.DrawScaledRect(cachedScoreboard, 0, 0, SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, shared.CLR_OVERLAY)
 
 		textX := 20
 		textY := 30
 		lineHeight := 30
-		util.DrawText(cachedScoreboard, "Scoreboard (Top 20 Players)", textX, textY, CLR_WHITE, util.Font.Normal)
+		util.DrawText(cachedScoreboard, "Scoreboard (Top 20 Players)", textX, textY, shared.CLR_WHITE, util.Font.Normal)
 		textY += lineHeight
 
 		sortedPlayers := playerList
@@ -39,7 +40,7 @@ func drawScoreboard(screen *ebiten.Image, playerList []hll.DetailedPlayerInfo) {
 			return sortedPlayers[i].Score.Combat > sortedPlayers[j].Score.Combat
 		})
 
-		util.DrawText(cachedScoreboard, formatScoreboardLine("Rank", "Name", "Kills", "Deaths", "K/D", "Lvl", "Cbt", "Off", "Def", "Sup"), textX, textY, CLR_WHITE, util.Font.Small)
+		util.DrawText(cachedScoreboard, formatScoreboardLine("Rank", "Name", "Kills", "Deaths", "K/D", "Lvl", "Cbt", "Off", "Def", "Sup"), textX, textY, shared.CLR_WHITE, util.Font.Small)
 		textY += 25
 		for i, player := range sortedPlayers {
 			if i >= 20 {
@@ -53,14 +54,14 @@ func drawScoreboard(screen *ebiten.Image, playerList []hll.DetailedPlayerInfo) {
 			}
 			playerInfo := formatScoreboardLine(strconv.Itoa(i+1), player.Name, strconv.Itoa(player.Kills), strconv.Itoa(player.Deaths), kdStr, strconv.Itoa(player.Level),
 				strconv.Itoa(player.Score.Combat), strconv.Itoa(player.Score.Offense), strconv.Itoa(player.Score.Defense), strconv.Itoa(player.Score.Support))
-			util.DrawText(cachedScoreboard, playerInfo, textX, textY, CLR_WHITE, util.Font.Small)
+			util.DrawText(cachedScoreboard, playerInfo, textX, textY, shared.CLR_WHITE, util.Font.Small)
 			textY += 15
 		}
 		lastScoreboardUpdate = currentTime
 	}
 
-	screenWidth := ROOT_SCALING_SIZE
-	screenHeight := ROOT_SCALING_SIZE
+	screenWidth := shared.ROOT_SCALING_SIZE
+	screenHeight := shared.ROOT_SCALING_SIZE
 	scoreboardX := (screenWidth - SCOREBOARD_WIDTH) / 2
 	scoreboardY := (screenHeight - SCOREBOARD_HEIGHT) / 2
 

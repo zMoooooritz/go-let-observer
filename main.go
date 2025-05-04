@@ -9,6 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/logger"
 	"github.com/zMoooooritz/go-let-observer/pkg/ui"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -21,9 +22,9 @@ var (
 	host      = flag.String("host", "", "RCON server host")
 	port      = flag.String("port", "", "RCON server port")
 	password  = flag.String("password", "", "RCON server password")
-	size      = flag.Int("size", ui.ROOT_SCALING_SIZE, "Screen size")
+	size      = flag.Int("size", shared.ROOT_SCALING_SIZE, "Screen size")
 	directory = flag.String("directory", "", "Path to the replay directory")
-	mode      = flag.String("mode", string(ui.MODE_NONE), "Mode to run on startup (viewer, replay, record)")
+	mode      = flag.String("mode", string(shared.MODE_NONE), "Mode to run on startup (viewer, replay, record)")
 	version   = flag.Bool("version", false, "Display version information")
 )
 
@@ -54,7 +55,7 @@ func extractCliParams() {
 	if *password != "" {
 		util.Config.ServerCredentials.Password = *password
 	}
-	if *size != ui.ROOT_SCALING_SIZE {
+	if *size != shared.ROOT_SCALING_SIZE {
 		util.Config.UIOptions.ScreenSize = *size
 	}
 	if *directory != "" {
@@ -73,21 +74,21 @@ func main() {
 		showVersion()
 	}
 
-	viewerMode := ui.PresentationMode(*mode)
-	if viewerMode != ui.MODE_NONE && viewerMode != ui.MODE_VIEWER && viewerMode != ui.MODE_REPLAY && viewerMode != ui.MODE_RECORD {
-		fmt.Printf("Invalid startup mode. Allowed values are: %s, %s, %s.\n", ui.MODE_VIEWER, ui.MODE_REPLAY, ui.MODE_RECORD)
+	viewerMode := shared.PresentationMode(*mode)
+	if viewerMode != shared.MODE_NONE && viewerMode != shared.MODE_VIEWER && viewerMode != shared.MODE_REPLAY && viewerMode != shared.MODE_RECORD {
+		fmt.Printf("Invalid startup mode. Allowed values are: %s, %s, %s.\n", shared.MODE_VIEWER, shared.MODE_REPLAY, shared.MODE_RECORD)
 		os.Exit(1)
 	}
 
 	extractCliParams()
 
-	if (viewerMode == ui.MODE_RECORD || viewerMode == ui.MODE_REPLAY) && util.Config.ReplaysDirectory == "" {
+	if (viewerMode == shared.MODE_RECORD || viewerMode == shared.MODE_REPLAY) && util.Config.ReplaysDirectory == "" {
 		fmt.Println("Replays directory is required in replay and record mode.")
 		os.Exit(1)
 	}
 
 	screenSize := util.Config.UIOptions.ScreenSize
-	screenSize = util.Clamp(screenSize, ui.MIN_SCREEN_SIZE, ui.MAX_SCREEN_SIZE)
+	screenSize = util.Clamp(screenSize, shared.MIN_SCREEN_SIZE, shared.MAX_SCREEN_SIZE)
 	util.Config.UIOptions.ScreenSize = screenSize
 	util.InitializeFonts(screenSize)
 	userInterface := ui.NewUI(viewerMode)

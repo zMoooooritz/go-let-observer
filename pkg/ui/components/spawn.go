@@ -1,33 +1,34 @@
-package ui
+package components
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"github.com/zMoooooritz/go-let-observer/pkg/rcndata"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
-func drawSpawns(screen *ebiten.Image, spawns []rcndata.SpawnPoint, spawnImages map[string]*ebiten.Image, vd *ViewDimension) {
+func DrawSpawns(screen *ebiten.Image, spawns []rcndata.SpawnPoint, spawnImages map[string]*ebiten.Image, vd *shared.ViewDimension) {
 	for _, spawn := range spawns {
 		if spawn.SpawnType == rcndata.SpawnTypeNone {
 			continue
 		}
 
-		x, y := util.TranslateCoords(vd.sizeX, vd.sizeY, spawn.Position)
-		x = x*vd.zoomLevel + vd.panX
-		y = y*vd.zoomLevel + vd.panY
+		x, y := util.TranslateCoords(vd.SizeX, vd.SizeY, spawn.Position)
+		x = x*vd.ZoomLevel + vd.PanX
+		y = y*vd.ZoomLevel + vd.PanY
 
-		clr := CLR_ALLIES_DARK
+		clr := shared.CLR_ALLIES_DARK
 		if spawn.Team == hll.TmAxis {
-			clr = CLR_AXIS_DARK
+			clr = shared.CLR_AXIS_DARK
 		}
 
-		rectSize := int(2 * util.IconCircleRadius(vd.zoomLevel, SPAWN_SIZE_MODIFIER))
+		rectSize := int(2 * util.IconCircleRadius(vd.ZoomLevel, shared.SPAWN_SIZE_MODIFIER))
 		util.DrawScaledRect(screen, int(x)-rectSize/2, int(y)-rectSize/2, rectSize, rectSize, clr)
 
 		spawnImage, ok := spawnImages[string(spawn.SpawnType)]
 		if ok {
-			targetSize := util.IconSize(vd.zoomLevel, SPAWN_SIZE_MODIFIER)
+			targetSize := util.IconSize(vd.ZoomLevel, shared.SPAWN_SIZE_MODIFIER)
 			iconScale := targetSize / float64(spawnImage.Bounds().Dx())
 
 			options := &ebiten.DrawImageOptions{}

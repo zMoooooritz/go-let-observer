@@ -1,4 +1,4 @@
-package ui
+package views
 
 import (
 	"image/color"
@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/zMoooooritz/go-let-observer/pkg/record"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -93,17 +94,17 @@ func (rv *ReplayView) Update() error {
 func (rv *ReplayView) Draw(screen *ebiten.Image) {
 	rv.DrawBackground(screen)
 
-	util.DrawScaledRect(screen, 0, 0, 1000, 400, CLR_OVERLAY)
+	util.DrawScaledRect(screen, 0, 0, 1000, 400, shared.CLR_OVERLAY)
 
-	util.DrawText(screen, "Select a Replay", 20, 40, CLR_WHITE, util.Font.Title)
+	util.DrawText(screen, "Select a Replay", 20, 40, shared.CLR_WHITE, util.Font.Title)
 
 	if len(rv.replays) == 0 {
 		util.DrawText(screen, "No replays found", 50, 100, color.Gray{Y: 200}, util.Font.Normal)
 	} else {
 		for i := rv.visibleStart; i < rv.visibleStart+rv.visibleCount && i < len(rv.replays); i++ {
-			color := CLR_WHITE
+			color := shared.CLR_WHITE
 			if i == rv.selectedReplay {
-				color = CLR_SELECTED
+				color = shared.CLR_SELECTED
 			}
 			util.DrawText(screen, rv.replays[i], 50, 100+(i-rv.visibleStart)*40, color, util.Font.Normal)
 		}

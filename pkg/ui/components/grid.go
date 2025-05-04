@@ -1,4 +1,4 @@
-package ui
+package components
 
 import (
 	"image/color"
@@ -6,6 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -19,7 +20,7 @@ var (
 	FILL_COLOR = color.RGBA{50, 50, 50, 100}
 )
 
-func drawGrid(screen *ebiten.Image, vd *ViewDimension, orientation hll.Orientation) {
+func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, orientation hll.Orientation) {
 	width, height := vd.FrustumSize()
 
 	cellWidth := width / 5
@@ -29,8 +30,8 @@ func drawGrid(screen *ebiten.Image, vd *ViewDimension, orientation hll.Orientati
 
 	for i := 0; i < 5; i++ {
 		for j := 0; j < 5; j++ {
-			x := float64(i)*cellWidth + vd.panX
-			y := float64(j)*cellHeight + vd.panY
+			x := float64(i)*cellWidth + vd.PanX
+			y := float64(j)*cellHeight + vd.PanY
 
 			if orientation == hll.OriHorizontal {
 				if j == 0 || j == 4 {
@@ -52,7 +53,7 @@ func drawGrid(screen *ebiten.Image, vd *ViewDimension, orientation hll.Orientati
 				}
 			}
 
-			strokeWidth := util.AdaptiveScaledDim(MAIN_GRID_STROKE_WIDTH, vd.zoomLevel)
+			strokeWidth := util.AdaptiveScaledDim(MAIN_GRID_STROKE_WIDTH, vd.ZoomLevel)
 
 			// main grid lines
 			vector.StrokeLine(screen, float32(x), float32(y), float32(x+cellWidth), float32(y), float32(strokeWidth), GRID_COLOR, false)
@@ -63,7 +64,7 @@ func drawGrid(screen *ebiten.Image, vd *ViewDimension, orientation hll.Orientati
 			subCellWidth := cellWidth / 2
 			subCellHeight := cellHeight / 2
 
-			strokeWidth = util.AdaptiveScaledDim(SUB_GRID_STROKE_WIDTH, vd.zoomLevel)
+			strokeWidth = util.AdaptiveScaledDim(SUB_GRID_STROKE_WIDTH, vd.ZoomLevel)
 
 			// sub grid lines
 			vector.StrokeLine(screen, float32(x), float32(y+subCellHeight), float32(x+cellWidth), float32(y+subCellHeight), float32(strokeWidth), GRID_COLOR, false)

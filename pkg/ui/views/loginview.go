@@ -1,4 +1,4 @@
-package ui
+package views
 
 import (
 	"image/color"
@@ -6,13 +6,14 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
 type LoginView struct {
 	*BaseViewer
 
-	targetMode PresentationMode
+	targetMode shared.PresentationMode
 
 	activeField   int
 	hostInput     string
@@ -21,7 +22,7 @@ type LoginView struct {
 	errorMessage  string
 }
 
-func NewLoginView(bv *BaseViewer, targetMode PresentationMode) *LoginView {
+func NewLoginView(bv *BaseViewer, targetMode shared.PresentationMode) *LoginView {
 	lv := &LoginView{
 		BaseViewer: bv,
 		targetMode: targetMode,
@@ -48,7 +49,7 @@ func (lv *LoginView) Update() error {
 			}
 
 			bv := NewBaseViewer(lv.ctx)
-			state, err := createState(bv, lv.targetMode, &cfg)
+			state, err := CreateState(bv, lv.targetMode, &cfg)
 			if err != nil {
 				lv.errorMessage = "Invalid credentials or connection error"
 			} else {
@@ -95,34 +96,34 @@ func (lv *LoginView) Update() error {
 func (lv *LoginView) Draw(screen *ebiten.Image) {
 	lv.DrawBackground(screen)
 
-	util.DrawScaledRect(screen, 0, 0, 1000, 400, CLR_OVERLAY)
+	util.DrawScaledRect(screen, 0, 0, 1000, 400, shared.CLR_OVERLAY)
 
-	util.DrawText(screen, "Login to HLL Observer", 20, 40, CLR_WHITE, util.Font.Title)
+	util.DrawText(screen, "Login to HLL Observer", 20, 40, shared.CLR_WHITE, util.Font.Title)
 
-	util.DrawText(screen, "Host:", 50, 100, CLR_WHITE, util.Font.Normal)
-	util.DrawText(screen, "Port:", 50, 160, CLR_WHITE, util.Font.Normal)
-	util.DrawText(screen, "Password:", 50, 220, CLR_WHITE, util.Font.Normal)
+	util.DrawText(screen, "Host:", 50, 100, shared.CLR_WHITE, util.Font.Normal)
+	util.DrawText(screen, "Port:", 50, 160, shared.CLR_WHITE, util.Font.Normal)
+	util.DrawText(screen, "Password:", 50, 220, shared.CLR_WHITE, util.Font.Normal)
 
-	hostRectColor := CLR_WHITE
-	portRectColor := CLR_WHITE
-	passwordRectColor := CLR_WHITE
+	hostRectColor := shared.CLR_WHITE
+	portRectColor := shared.CLR_WHITE
+	passwordRectColor := shared.CLR_WHITE
 
 	switch lv.activeField {
 	case 0:
-		hostRectColor = CLR_SELECTED
+		hostRectColor = shared.CLR_SELECTED
 	case 1:
-		portRectColor = CLR_SELECTED
+		portRectColor = shared.CLR_SELECTED
 	case 2:
-		passwordRectColor = CLR_SELECTED
+		passwordRectColor = shared.CLR_SELECTED
 	}
 
 	util.DrawScaledRect(screen, 180, 80, 300, 30, hostRectColor)
 	util.DrawScaledRect(screen, 180, 140, 300, 30, portRectColor)
 	util.DrawScaledRect(screen, 180, 200, 300, 30, passwordRectColor)
 
-	util.DrawText(screen, lv.hostInput, 185, 100, CLR_BLACK, util.Font.Normal)
-	util.DrawText(screen, lv.portInput, 185, 160, CLR_BLACK, util.Font.Normal)
-	util.DrawText(screen, lv.passwordInput, 185, 220, CLR_BLACK, util.Font.Normal)
+	util.DrawText(screen, lv.hostInput, 185, 100, shared.CLR_BLACK, util.Font.Normal)
+	util.DrawText(screen, lv.portInput, 185, 160, shared.CLR_BLACK, util.Font.Normal)
+	util.DrawText(screen, lv.passwordInput, 185, 220, shared.CLR_BLACK, util.Font.Normal)
 
 	if lv.errorMessage != "" {
 		util.DrawText(screen, lv.errorMessage, 50, 280, color.RGBA{255, 0, 0, 255}, util.Font.Normal)

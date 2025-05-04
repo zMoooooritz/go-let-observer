@@ -1,4 +1,4 @@
-package ui
+package views
 
 import (
 	"fmt"
@@ -6,12 +6,16 @@ import (
 	"sort"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"github.com/zMoooooritz/go-let-observer/assets"
 	"github.com/zMoooooritz/go-let-observer/pkg/rcndata"
 	"github.com/zMoooooritz/go-let-observer/pkg/record"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/components"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -73,7 +77,7 @@ type MapView struct {
 	dataFetcher  rcndata.DataFetcher
 	dataRecorder record.DataRecorder
 
-	notifications *NotificationManager
+	notifications *components.NotificationManager
 }
 
 func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder record.DataRecorder) *MapView {
@@ -88,7 +92,7 @@ func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder re
 			showTanks:      util.Config.UIOptions.ShowTanks,
 		},
 		FetchState: FetchState{
-			intervalIndex: INITIAL_FETCH_STEP,
+			intervalIndex: shared.INITIAL_FETCH_STEP,
 		},
 		RconData: RconData{
 			spawnTracker: rcndata.NewSpawnTracker(),
@@ -97,7 +101,7 @@ func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder re
 		spawnImages:   util.LoadSpawnImages(),
 		dataFetcher:   dataFetcher,
 		dataRecorder:  dataRecorder,
-		notifications: NewNotificationManager(),
+		notifications: components.NewNotificationManager(),
 	}
 	mv.backgroundImage = util.LoadGreeterImage()
 	return mv
@@ -151,33 +155,33 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 	}
 
 	if mv.showGrid {
-		drawGrid(screen, mv.dim, mv.currentMapOrientation)
+		components.DrawGrid(screen, mv.dim, mv.currentMapOrientation)
 	}
 
 	if mv.showSpawns && !mv.dataFetcher.IsUserSeekable() {
-		drawSpawns(screen, mv.spawnTracker.GetSpawns(), mv.spawnImages, mv.dim)
+		components.DrawSpawns(screen, mv.spawnTracker.GetSpawns(), mv.spawnImages, mv.dim)
 	}
 
 	if mv.showPlayers {
-		drawPlayers(screen, mv.dim, mv.roleImages, mv.playerList, mv.selectedPlayerID)
+		components.DrawPlayers(screen, mv.dim, mv.roleImages, mv.playerList, mv.selectedPlayerID)
 	}
 
 	if mv.showTanks {
-		drawTankSquads(screen, mv.dim, mv.roleImages, mv.serverView, mv.selectedPlayerID)
+		components.DrawTankSquads(screen, mv.dim, mv.roleImages, mv.serverView, mv.selectedPlayerID)
 	}
 
 	if mv.showHelp {
-		drawHelp(screen)
+		components.DrawHelp(screen)
 	} else if mv.showScoreboard {
-		drawScoreboard(screen, mv.playerList)
+		components.DrawScoreboard(screen, mv.playerList)
 	} else {
 		if mv.showServerInfo {
-			drawServerName(screen, mv.serverName)
-			drawPlayerCount(screen, mv.playerCurrCount, mv.playerMaxCount)
+			components.DrawServerName(screen, mv.serverName)
+			components.DrawPlayerCount(screen, mv.playerCurrCount, mv.playerMaxCount)
 		}
 		if mv.showPlayerInfo {
 			if player, ok := mv.playerMap[mv.selectedPlayerID]; ok {
-				drawPlayerOverlay(screen, player)
+				components.DrawPlayerInfoOverlay(screen, player)
 			}
 		}
 	}
@@ -186,7 +190,7 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 		start, current, end := mv.dataFetcher.StartCurrentEndTime()
 		progress := float64(current.Sub(start)) / float64(end.Sub(start))
 
-		drawProgressBar(screen, progress)
+		components.DrawProgressBar(screen, progress)
 	}
 
 	mv.notifications.Draw(screen)
@@ -243,4 +247,159 @@ func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
 	mv.playerMaxCount = snapshot.SessionInfo.MaxPlayerCount
 
 	mv.initialDataLoaded = true
+}
+
+func (mv *MapView) handleMouseInput() {
+	mouseX, mouseY := ebiten.CursorPosition()
+	_, wheelY := ebiten.Wheel()
+	if wheelY != 0 {
+		oldZoom := mv.dim.ZoomLevel
+		mv.dim.ZoomLevel += float64(wheelY * shared.ZOOM_STEP_MULTIPLIER)
+		if mv.dim.ZoomLevel < shared.MIN_ZOOM_LEVEL {
+			mv.dim.ZoomLevel = shared.MIN_ZOOM_LEVEL
+		} else if mv.dim.ZoomLevel > shared.MAX_ZOOM_LEVEL {
+			mv.dim.ZoomLevel = shared.MAX_ZOOM_LEVEL
+		}
+
+		mouseWorldX := (float64(mouseX) - mv.dim.PanX) / oldZoom
+		mouseWorldY := (float64(mouseY) - mv.dim.PanY) / oldZoom
+		mv.dim.PanX -= mouseWorldX * (mv.dim.ZoomLevel - oldZoom)
+		mv.dim.PanY -= mouseWorldY * (mv.dim.ZoomLevel - oldZoom)
+	}
+
+	if mv.dim.ZoomLevel == shared.MIN_ZOOM_LEVEL {
+		mv.dim.PanX = 0
+		mv.dim.PanY = 0
+	} else {
+		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+			x, y := ebiten.CursorPosition()
+			if mv.isDragging {
+				mv.dim.PanX += float64(x - mv.lastMouseX)
+				mv.dim.PanY += float64(y - mv.lastMouseY)
+			}
+			mv.lastMouseX = x
+			mv.lastMouseY = y
+			mv.isDragging = true
+		} else {
+			mv.isDragging = false
+		}
+
+		mv.dim.PanX = util.Clamp(mv.dim.PanX, float64(mv.dim.SizeX)*(shared.MIN_ZOOM_LEVEL-mv.dim.ZoomLevel), 0)
+		mv.dim.PanY = util.Clamp(mv.dim.PanY, float64(mv.dim.SizeY)*(shared.MIN_ZOOM_LEVEL-mv.dim.ZoomLevel), 0)
+	}
+
+	if mv.showPlayers && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		foundPlayer := false
+		mouseX, mouseY := ebiten.CursorPosition()
+		for _, player := range mv.playerMap {
+			if !player.IsSpawned() {
+				continue
+			}
+
+			x, y := util.TranslateCoords(mv.dim.SizeX, mv.dim.SizeY, player.Position)
+			x = x*mv.dim.ZoomLevel + mv.dim.PanX
+			y = y*mv.dim.ZoomLevel + mv.dim.PanY
+
+			radius := util.IconCircleRadius(mv.dim.ZoomLevel, shared.PLAYER_SIZE_MODIFIER)
+			if (float64(mouseX)-x)*(float64(mouseX)-x)+(float64(mouseY)-y)*(float64(mouseY)-y) <= radius*radius {
+				mv.selectedPlayerID = player.ID
+				foundPlayer = true
+				break
+			}
+		}
+		if !foundPlayer {
+			mv.selectedPlayerID = ""
+		}
+	}
+}
+
+func (mv *MapView) handleKeyboardInput() {
+	typed := ebiten.AppendInputChars(nil)
+	for _, r := range typed {
+		typedKey := string(unicode.ToLower(r))
+
+		if typedKey == "g" {
+			mv.showGrid = !mv.showGrid
+			mv.notifications.Push(fmt.Sprintf("Show Grid: %t", mv.showGrid))
+		}
+
+		if typedKey == "p" {
+			mv.showPlayers = !mv.showPlayers
+			mv.notifications.Push(fmt.Sprintf("Show Players: %t", mv.showPlayers))
+		}
+
+		if typedKey == "i" {
+			mv.showPlayerInfo = !mv.showPlayerInfo
+			mv.notifications.Push(fmt.Sprintf("Show Player Info: %t", mv.showPlayerInfo))
+		}
+
+		if typedKey == "s" {
+			mv.showSpawns = !mv.showSpawns
+			mv.notifications.Push(fmt.Sprintf("Show Spawns: %t", mv.showSpawns))
+		}
+
+		if typedKey == "t" {
+			mv.showTanks = !mv.showTanks
+			mv.notifications.Push(fmt.Sprintf("Show Tanks: %t", mv.showTanks))
+		}
+
+		if typedKey == "h" {
+			mv.showServerInfo = !mv.showServerInfo
+			mv.notifications.Push(fmt.Sprintf("Show Server Info: %t", mv.showServerInfo))
+		}
+
+		if typedKey == "+" {
+			if mv.intervalIndex < len(fetchIntervalSteps)-1 {
+				mv.intervalIndex++
+			}
+			mv.notifications.Push(fmt.Sprintf("Fetch-Interval: %s", fetchIntervalSteps[mv.intervalIndex]))
+		}
+
+		if typedKey == "-" {
+			if mv.intervalIndex > 0 {
+				mv.intervalIndex--
+			}
+			mv.notifications.Push(fmt.Sprintf("Fetch-Interval: %s", fetchIntervalSteps[mv.intervalIndex]))
+		}
+
+		if typedKey == "?" {
+			mv.showHelp = !mv.showHelp
+		}
+
+	}
+
+	mv.showScoreboard = false
+	if ebiten.IsKeyPressed(ebiten.KeyTab) {
+		mv.showScoreboard = true
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		if mv.dataFetcher.IsPaused() {
+			mv.dataFetcher.Continue()
+		} else {
+			mv.dataFetcher.Pause()
+		}
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+		duration := -time.Second
+		if ebiten.IsKeyPressed(ebiten.KeyShift) {
+			duration = -time.Minute
+		}
+		mv.dataFetcher.Seek(duration)
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) {
+		mv.dataFetcher.Seek(-2 * time.Hour)
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+		duration := time.Second
+		if ebiten.IsKeyPressed(ebiten.KeyShift) {
+			duration = time.Minute
+		}
+		mv.dataFetcher.Seek(duration)
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
+		mv.dataFetcher.Seek(2 * time.Hour)
+	}
 }

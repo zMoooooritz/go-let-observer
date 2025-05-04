@@ -1,9 +1,10 @@
-package ui
+package components
 
 import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -44,34 +45,34 @@ const (
 	HELP_HEIGHT = 400
 )
 
-func drawHelp(screen *ebiten.Image) {
+func DrawHelp(screen *ebiten.Image) {
 	if helpCache == nil {
 		helpCache = ebiten.NewImage(HELP_WIDTH, HELP_HEIGHT)
 
-		util.DrawScaledRect(helpCache, 0, 0, HELP_WIDTH, HELP_HEIGHT, CLR_OVERLAY)
+		util.DrawScaledRect(helpCache, 0, 0, HELP_WIDTH, HELP_HEIGHT, shared.CLR_OVERLAY)
 
 		textX := 20
 		textY := 30
 		lineHeight := 30
-		util.DrawText(helpCache, "Help", textX, textY, CLR_WHITE, util.Font.Normal)
+		util.DrawText(helpCache, "Help", textX, textY, shared.CLR_WHITE, util.Font.Normal)
 		textY += lineHeight
 		textX += 20
 
 		for _, mouseaction := range mouseactions {
-			util.DrawText(helpCache, formatHelpLine(mouseaction.Action, mouseaction.Key), textX, textY, CLR_WHITE, util.Font.Small)
+			util.DrawText(helpCache, formatHelpLine(mouseaction.Action, mouseaction.Key), textX, textY, shared.CLR_WHITE, util.Font.Small)
 			textY += 20
 		}
 
 		textY += 20
 
 		for _, keybind := range keybinds {
-			util.DrawText(helpCache, formatHelpLine(keybind.Action, keybind.Key), textX, textY, CLR_WHITE, util.Font.Small)
+			util.DrawText(helpCache, formatHelpLine(keybind.Action, keybind.Key), textX, textY, shared.CLR_WHITE, util.Font.Small)
 			textY += 20
 		}
 	}
 
-	screenWidth := ROOT_SCALING_SIZE
-	screenHeight := ROOT_SCALING_SIZE
+	screenWidth := shared.ROOT_SCALING_SIZE
+	screenHeight := shared.ROOT_SCALING_SIZE
 	helpX := (screenWidth - HELP_WIDTH) / 2
 	helpY := (screenHeight - HELP_HEIGHT) / 2
 

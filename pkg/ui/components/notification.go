@@ -1,10 +1,11 @@
-package ui
+package components
 
 import (
 	"sync"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
@@ -67,12 +68,12 @@ func (nm *NotificationManager) Draw(screen *ebiten.Image) {
 
 	height := 20*len(nm.messages) + 15
 
-	util.DrawScaledRect(screen, 0, 1000-height, 400, height, CLR_OVERLAY)
+	util.DrawScaledRect(screen, 0, 1000-height, 400, height, shared.CLR_OVERLAY)
 
 	x, y := 10, screen.Bounds().Dy()-10
 	for i := len(nm.messages) - 1; i >= 0; i-- {
 		msg := nm.messages[i]
-		util.DrawText(screen, msg.Message, x, y, CLR_WHITE, util.Font.Normal)
+		util.DrawText(screen, msg.Message, x, y, shared.CLR_WHITE, util.Font.Normal)
 		y -= 20
 	}
 }
