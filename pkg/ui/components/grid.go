@@ -13,6 +13,8 @@ import (
 const (
 	MAIN_GRID_STROKE_WIDTH = 2
 	SUB_GRID_STROKE_WIDTH  = 1
+
+	GRID_SIZE = 5
 )
 
 var (
@@ -23,13 +25,18 @@ var (
 func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, orientation hll.Orientation) {
 	width, height := vd.FrustumSize()
 
-	cellWidth := width / 5
-	cellHeight := height / 5
+	cellWidth := width / float64(GRID_SIZE)
+	cellHeight := height / float64(GRID_SIZE)
 
-	active := []int{1, 2, 1, 0, 0}
+	// gameScore := hll.TeamData{
+	// 	Allies: 2,
+	// 	Axis:   3,
+	// }
 
-	for i := 0; i < 5; i++ {
-		for j := 0; j < 5; j++ {
+	// activeSectors := []int{1, 2, 1, 0, 0}
+
+	for i := 0; i < GRID_SIZE; i++ {
+		for j := 0; j < GRID_SIZE; j++ {
 			x := float64(i)*cellWidth + vd.PanX
 			y := float64(j)*cellHeight + vd.PanY
 
@@ -38,9 +45,16 @@ func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, orientation hll.Or
 					continue
 				}
 
-				if active[i]+1 == j {
-					// vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), fillColor, false)
-				}
+				// if i < gameScore.Allies {
+				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ALLIES_OVERLAY, false)
+				// }
+				// if gridSize-i <= gameScore.Axis {
+				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_AXIS_OVERLAY, false)
+				// }
+
+				// if activeSectors[i]+1 == j {
+				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ACTIVE_SECTOR_OVERLAY, false)
+				// }
 			}
 
 			if orientation == hll.OriVertical {
@@ -48,9 +62,16 @@ func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, orientation hll.Or
 					continue
 				}
 
-				if active[j]+1 == i {
-					// vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), fillColor, false)
-				}
+				// if j < gameScore.Allies {
+				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ALLIES_OVERLAY, false)
+				// }
+				// if gridSize-j <= gameScore.Axis {
+				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_AXIS_OVERLAY, false)
+				// }
+
+				// if activeSectors[j]+1 == i {
+				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ACTIVE_SECTOR_OVERLAY, false)
+				// }
 			}
 
 			strokeWidth := util.AdaptiveScaledDim(MAIN_GRID_STROKE_WIDTH, vd.ZoomLevel)

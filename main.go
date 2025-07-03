@@ -83,7 +83,7 @@ func main() {
 	extractCliParams()
 
 	if (viewerMode == shared.MODE_RECORD || viewerMode == shared.MODE_REPLAY) && util.Config.ReplaysDirectory == "" {
-		fmt.Println("Replays directory is required in replay and record mode.")
+		fmt.Println("Replay directory is required in replay and record mode.")
 		os.Exit(1)
 	}
 

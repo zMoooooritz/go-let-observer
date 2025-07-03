@@ -175,7 +175,7 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 	} else if mv.showScoreboard {
 		components.DrawScoreboard(screen, mv.playerList)
 	} else {
-		if mv.showServerInfo {
+		if mv.showServerInfo && !mv.dataFetcher.IsUserSeekable() {
 			components.DrawServerName(screen, mv.serverName)
 			components.DrawPlayerCount(screen, mv.playerCurrCount, mv.playerMaxCount)
 		}
