@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
+	"github.com/zMoooooritz/go-let-loose/pkg/rcon"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,8 +18,8 @@ type Configuration struct {
 	ReplaysDirectory  string            `yaml:"ReplaysDirectory"`
 }
 
-func (c *Configuration) GetServerCredentials() rconv2.ServerConfig {
-	return rconv2.ServerConfig{
+func (c *Configuration) GetServerCredentials() rcon.ServerConfig {
+	return rcon.ServerConfig{
 		Host:     c.ServerCredentials.Host,
 		Port:     c.ServerCredentials.Port,
 		Password: c.ServerCredentials.Password,

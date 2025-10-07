@@ -1,19 +1,19 @@
 package views
 
 import (
-	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
+	"github.com/zMoooooritz/go-let-loose/pkg/rcon"
 	"github.com/zMoooooritz/go-let-observer/pkg/rcndata"
 	"github.com/zMoooooritz/go-let-observer/pkg/record"
 	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
-func CreateState(bv *BaseViewer, targetMode shared.PresentationMode, rconCreds *rconv2.ServerConfig) (shared.State, error) {
+func CreateState(bv *BaseViewer, targetMode shared.PresentationMode, rconCreds *rcon.ServerConfig) (shared.State, error) {
 	if rconCreds == nil {
 		creds := util.Config.GetServerCredentials()
 		rconCreds = &creds
 	}
-	rcn, rcnErr := rconv2.NewRcon(*rconCreds, shared.RCON_WORKER_COUNT)
+	rcn, rcnErr := rcon.NewRcon(*rconCreds, shared.RCON_WORKER_COUNT)
 	if rcnErr == nil {
 		dataFetcher := rcndata.NewRconDataFetcher(rcn)
 

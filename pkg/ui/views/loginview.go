@@ -5,7 +5,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
+	"github.com/zMoooooritz/go-let-loose/pkg/rcon"
 	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
@@ -42,7 +42,7 @@ func (lv *LoginView) Update() error {
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		if lv.hostInput != "" && lv.portInput != "" && lv.passwordInput != "" {
-			cfg := rconv2.ServerConfig{
+			cfg := rcon.ServerConfig{
 				Host:     lv.hostInput,
 				Port:     lv.portInput,
 				Password: lv.passwordInput,

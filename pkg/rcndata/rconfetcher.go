@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
-	"github.com/zMoooooritz/go-let-loose/pkg/rconv2"
+	"github.com/zMoooooritz/go-let-loose/pkg/rcon"
 )
 
 type RconDataSnapshot struct {
@@ -26,10 +26,10 @@ type DataFetcher interface {
 }
 
 type RconDataFetcher struct {
-	rcon *rconv2.Rcon
+	rcon *rcon.Rcon
 }
 
-func NewRconDataFetcher(rcon *rconv2.Rcon) *RconDataFetcher {
+func NewRconDataFetcher(rcon *rcon.Rcon) *RconDataFetcher {
 	return &RconDataFetcher{
 		rcon: rcon,
 	}
