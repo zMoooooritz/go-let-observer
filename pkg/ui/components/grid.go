@@ -22,52 +22,71 @@ var (
 	FILL_COLOR = color.RGBA{50, 50, 50, 100}
 )
 
-func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, orientation hll.Orientation) {
+func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, currentMapID string, gameScore hll.TeamData) {
 	width, height := vd.FrustumSize()
 
 	cellWidth := width / float64(GRID_SIZE)
 	cellHeight := height / float64(GRID_SIZE)
 
-	// gameScore := hll.TeamData{
-	// 	Allies: 2,
-	// 	Axis:   3,
-	// }
-
 	// activeSectors := []int{1, 2, 1, 0, 0}
+
+	currentMap := hll.MapToGameMap(hll.Map(currentMapID))
 
 	for i := 0; i < GRID_SIZE; i++ {
 		for j := 0; j < GRID_SIZE; j++ {
 			x := float64(i)*cellWidth + vd.PanX
 			y := float64(j)*cellHeight + vd.PanY
 
-			if orientation == hll.OriHorizontal {
+			if currentMap.Orientation == hll.OriHorizontal {
 				if j == 0 || j == 4 {
 					continue
 				}
 
-				// if i < gameScore.Allies {
-				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ALLIES_OVERLAY, false)
-				// }
-				// if gridSize-i <= gameScore.Axis {
-				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_AXIS_OVERLAY, false)
-				// }
+				if currentMap.MirroredFactions {
+					// Mirrored: Allies from right, Axis from left
+					if GRID_SIZE-i <= gameScore.Allies {
+						vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ALLIES_OVERLAY, false)
+					}
+					if i < gameScore.Axis {
+						vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_AXIS_OVERLAY, false)
+					}
+				} else {
+					// Default: Allies from left, Axis from right
+					if i < gameScore.Allies {
+						vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ALLIES_OVERLAY, false)
+					}
+					if GRID_SIZE-i <= gameScore.Axis {
+						vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_AXIS_OVERLAY, false)
+					}
+				}
 
 				// if activeSectors[i]+1 == j {
 				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ACTIVE_SECTOR_OVERLAY, false)
 				// }
 			}
 
-			if orientation == hll.OriVertical {
+			if currentMap.Orientation == hll.OriVertical {
 				if i == 0 || i == 4 {
 					continue
 				}
 
-				// if j < gameScore.Allies {
-				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ALLIES_OVERLAY, false)
-				// }
-				// if gridSize-j <= gameScore.Axis {
-				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_AXIS_OVERLAY, false)
-				// }
+				if currentMap.MirroredFactions {
+					// Mirrored: Allies from bottom, Axis from top
+					if GRID_SIZE-j <= gameScore.Allies {
+						vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ALLIES_OVERLAY, false)
+					}
+					if j < gameScore.Axis {
+						vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_AXIS_OVERLAY, false)
+					}
+				} else {
+					// Default: Allies from top, Axis from bottom
+					if j < gameScore.Allies {
+						vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ALLIES_OVERLAY, false)
+					}
+					if GRID_SIZE-j <= gameScore.Axis {
+						vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_AXIS_OVERLAY, false)
+					}
+				}
 
 				// if activeSectors[j]+1 == i {
 				// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ACTIVE_SECTOR_OVERLAY, false)

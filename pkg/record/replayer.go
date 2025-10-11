@@ -51,7 +51,7 @@ func NewMatchReplayer(filePath string) (*MatchReplayer, error) {
 }
 
 func (r *MatchReplayer) FetchRconDataSnapshot() (*rcndata.RconDataSnapshot, error) {
-	state, err := r.getStateAt(r.currentTimeStamp)
+	state, snapshot, err := r.getStateAndSnapshotAt(r.currentTimeStamp)
 	if err != nil {
 		return nil, err
 	}
@@ -93,11 +93,15 @@ func (r *MatchReplayer) FetchRconDataSnapshot() (*rcndata.RconDataSnapshot, erro
 	}
 
 	return &rcndata.RconDataSnapshot{
-		Players:     players,
-		PlayerMap:   playerMap,
-		CurrentMap:  hll.MapToGameMap(hll.Map(r.Header.MapId)),
-		SessionInfo: hll.SessionInfo{},
-		FetchTime:   time.Now(),
+		Players:    players,
+		PlayerMap:  playerMap,
+		CurrentMap: hll.MapToGameMap(hll.Map(r.Header.MapId)),
+		SessionInfo: hll.SessionInfo{
+			AlliedScore:        int(snapshot.AlliedScore),
+			AxisScore:          int(snapshot.AxisScore),
+			RemainingMatchTime: snapshot.RemainingTime.AsDuration(),
+		},
+		FetchTime: time.Now(),
 	}, nil
 }
 
@@ -131,30 +135,37 @@ func (r *MatchReplayer) firstTimestamp() time.Time {
 }
 
 func (r *MatchReplayer) getStateAt(timestamp time.Time) (*FullSnapshot, error) {
+	state, _, err := r.getStateAndSnapshotAt(timestamp)
+	return state, err
+}
+
+func (r *MatchReplayer) getStateAndSnapshotAt(timestamp time.Time) (*FullSnapshot, *Snapshot, error) {
 	var baseSnapshot *FullSnapshot
+	var currentSnapshot *Snapshot
 	state := &FullSnapshot{}
 
 	for _, snapshot := range r.snapshots {
+		if snapshot.Timestamp.AsTime().After(timestamp) {
+			break
+		}
+		currentSnapshot = snapshot
+
 		switch s := snapshot.Data.(type) {
 		case *Snapshot_FullSnapshot:
-			if snapshot.Timestamp.AsTime().After(timestamp) {
-				break
-			}
 			baseSnapshot = s.FullSnapshot
 			state = proto.Clone(baseSnapshot).(*FullSnapshot)
 		case *Snapshot_DeltaSnapshot:
-			if snapshot.Timestamp.AsTime().After(timestamp) {
-				break
+			if baseSnapshot != nil {
+				applyDelta(state, s.DeltaSnapshot)
 			}
-			applyDelta(state, s.DeltaSnapshot)
 		}
 	}
 
 	if baseSnapshot == nil {
-		return nil, errors.New("no full snapshot found before the given timestamp")
+		return nil, nil, errors.New("no full snapshot found before the given timestamp")
 	}
 
-	return state, nil
+	return state, currentSnapshot, nil
 }
 
 func applyDelta(state *FullSnapshot, delta *DeltaSnapshot) {

@@ -54,15 +54,17 @@ type FetchState struct {
 }
 
 type RconData struct {
-	currentMapName        string
-	currentMapOrientation hll.Orientation
-	serverName            string
-	playerCurrCount       int
-	playerMaxCount        int
-	playerMap             map[string]hll.DetailedPlayerInfo
-	playerList            []hll.DetailedPlayerInfo
-	serverView            *hll.ServerView
-	spawnTracker          *rcndata.SpawnTracker
+	currentMapName  string
+	currentMapID    string
+	serverName      string
+	playerCurrCount int
+	playerMaxCount  int
+	playerMap       map[string]hll.DetailedPlayerInfo
+	playerList      []hll.DetailedPlayerInfo
+	serverView      *hll.ServerView
+	spawnTracker    *rcndata.SpawnTracker
+	gameScore       hll.TeamData
+	remainingTime   time.Duration
 }
 
 type MapView struct {
@@ -155,7 +157,7 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 	}
 
 	if mv.showGrid {
-		components.DrawGrid(screen, mv.dim, mv.currentMapOrientation)
+		components.DrawGrid(screen, mv.dim, mv.currentMapID, mv.gameScore)
 	}
 
 	if mv.showSpawns && !mv.dataFetcher.IsUserSeekable() {
@@ -223,7 +225,7 @@ func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
 	mv.playerList = snapshot.Players
 
 	currMapName := assets.ToFileName(snapshot.CurrentMap.ID)
-	mv.currentMapOrientation = snapshot.CurrentMap.Orientation
+	mv.currentMapID = string(snapshot.CurrentMap.ID)
 	if currMapName != mv.currentMapName {
 		if !mv.dataFetcher.IsUserSeekable() {
 			mv.spawnTracker.ResetSpawns()
@@ -245,6 +247,11 @@ func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
 	mv.serverName = snapshot.SessionInfo.ServerName
 	mv.playerCurrCount = snapshot.SessionInfo.PlayerCount
 	mv.playerMaxCount = snapshot.SessionInfo.MaxPlayerCount
+	mv.gameScore = hll.TeamData{
+		Allies: snapshot.SessionInfo.AlliedScore,
+		Axis:   snapshot.SessionInfo.AxisScore,
+	}
+	mv.remainingTime = snapshot.SessionInfo.RemainingMatchTime
 
 	mv.initialDataLoaded = true
 }

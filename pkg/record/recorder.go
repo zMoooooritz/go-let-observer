@@ -9,11 +9,12 @@ import (
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"github.com/zMoooooritz/go-let-observer/pkg/rcndata"
 	"google.golang.org/protobuf/proto"
+	durationpb "google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
-	VERSION                = "1.1"
+	VERSION                = "1.2"
 	FULL_SNAPSHOT_INTERVAL = 5 * time.Minute
 )
 
@@ -69,8 +70,11 @@ func (mr *MatchRecorder) RecordSnapshot(newData *rcndata.RconDataSnapshot) {
 	isFullSnapshot := len(mr.snapshots) == 0 || time.Since(mr.lastTimeFullSnapshot) >= FULL_SNAPSHOT_INTERVAL
 
 	snapshot := &Snapshot{
-		Index:     int32(len(mr.snapshots)),
-		Timestamp: timestamppb.Now(),
+		Index:         int32(len(mr.snapshots)),
+		Timestamp:     timestamppb.Now(),
+		AlliedScore:   int32(newData.SessionInfo.AlliedScore),
+		AxisScore:     int32(newData.SessionInfo.AxisScore),
+		RemainingTime: durationpb.New(newData.SessionInfo.RemainingMatchTime),
 	}
 	if isFullSnapshot {
 		fullSnapshot := &FullSnapshot{}

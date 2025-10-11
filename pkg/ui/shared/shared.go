@@ -38,8 +38,8 @@ var (
 	CLR_BLACK                 = color.RGBA{0, 0, 0, 255}
 	CLR_WHITE                 = color.RGBA{255, 255, 255, 255}
 	CLR_OVERLAY               = color.RGBA{0, 0, 0, 200}
-	CLR_ALLIES_OVERLAY        = color.RGBA{30, 30, 60, 50}
-	CLR_AXIS_OVERLAY          = color.RGBA{60, 30, 30, 50}
+	CLR_ALLIES_OVERLAY        = color.RGBA{30, 30, 60, 40}
+	CLR_AXIS_OVERLAY          = color.RGBA{60, 30, 30, 40}
 	CLR_ACTIVE_SECTOR_OVERLAY = color.RGBA{30, 30, 30, 90}
 
 	FALLBACK_BACKGROUND = color.RGBA{31, 31, 31, 255}

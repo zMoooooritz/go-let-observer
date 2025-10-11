@@ -5,6 +5,7 @@ package record;
 option go_package = "github.com/zMoooooritz/go-let-observer/record;record";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 
 message MatchPlayer {
     string name = 1;
@@ -55,6 +56,9 @@ message DeltaSnapshot {
 message Snapshot {
     int32 index = 1;
     google.protobuf.Timestamp timestamp = 2;
+    int32 allied_score = 5;
+    int32 axis_score = 6;
+    google.protobuf.Duration remaining_time = 7;
     oneof data {
         FullSnapshot full_snapshot = 3;
         DeltaSnapshot delta_snapshot = 4;
