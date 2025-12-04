@@ -22,7 +22,7 @@ var (
 	host      = flag.String("host", "", "RCON server host")
 	port      = flag.String("port", "", "RCON server port")
 	password  = flag.String("password", "", "RCON server password")
-	size      = flag.Int("size", shared.ROOT_SCALING_SIZE, "Screen size")
+	size      = flag.Int("size", shared.ROOT_SCALING_SIZE, "Screen size") // TODO: Fix UI scuffed on size other than 1000
 	directory = flag.String("directory", "", "Path to the replay directory")
 	mode      = flag.String("mode", string(shared.MODE_NONE), "Mode to run on startup (viewer, replay, record)")
 	version   = flag.Bool("version", false, "Display version information")

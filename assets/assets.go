@@ -31,6 +31,8 @@ func ToFileName(gameMap hll.Map) string {
 		return "foy"
 	case hll.MP_KURSK:
 		return "kursk"
+	case hll.MP_SMOLENSK:
+		return "smolensk"
 	case hll.MP_STALINGRAD:
 		return "stalingrad"
 	case hll.MP_REMAGEN:

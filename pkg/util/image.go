@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	roleCount = 14
+	roleCount = 17
 )
 
 func LoadRoleImages() map[string]*ebiten.Image {
