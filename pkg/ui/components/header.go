@@ -21,7 +21,7 @@ func DrawServerName(screen *ebiten.Image, serverName string) {
 	if cachedServerName == nil || currentTime.Sub(lastServerName) >= time.Second {
 		overlayWidth := 750
 		overlayHeight := 50
-		cachedServerName = ebiten.NewImage(overlayWidth, overlayHeight)
+		cachedServerName = util.NewScaledImage(overlayWidth, overlayHeight)
 
 		util.DrawScaledRect(cachedServerName, 0, 0, overlayWidth, overlayHeight, shared.CLR_OVERLAY)
 
@@ -39,7 +39,7 @@ func DrawPlayerCount(screen *ebiten.Image, playerCurrCount, playerMaxCount int) 
 	if cachedPlayerCount == nil || currentTime.Sub(lastPlayerCountUpdate) >= time.Second {
 		overlayWidth := 200
 		overlayHeight := 50
-		cachedPlayerCount = ebiten.NewImage(overlayWidth, overlayHeight)
+		cachedPlayerCount = util.NewScaledImage(overlayWidth, overlayHeight)
 
 		util.DrawScaledRect(cachedPlayerCount, 0, 0, overlayWidth, overlayHeight, shared.CLR_OVERLAY)
 
@@ -51,6 +51,6 @@ func DrawPlayerCount(screen *ebiten.Image, playerCurrCount, playerMaxCount int) 
 	}
 
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(0, 50)
+	op.GeoM.Translate(0, util.ScaledDim(50.0))
 	screen.DrawImage(cachedPlayerCount, op)
 }

@@ -25,6 +25,12 @@ func Clamp[T int | float64](value, min, max T) T {
 	return value
 }
 
+func NewScaledImage(width, height int) *ebiten.Image {
+	scaledWidth := int(float32(width) * ScaleFactor)
+	scaledHeight := int(float32(height) * ScaleFactor)
+	return ebiten.NewImage(scaledWidth, scaledHeight)
+}
+
 func DrawText(screen *ebiten.Image, txt string, x, y int, clr color.Color, face font.Face) {
 	x = int(float32(x) * ScaleFactor)
 	y = int(float32(y) * ScaleFactor)

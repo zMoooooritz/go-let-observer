@@ -20,7 +20,7 @@ func DrawPlayerInfoOverlay(screen *ebiten.Image, player hll.DetailedPlayerInfo) 
 	overlayX := shared.ROOT_SCALING_SIZE - overlayWidth
 
 	if playerInfoCache.image == nil || player != playerInfoCache.lastPlayer {
-		playerInfoCache.image = ebiten.NewImage(overlayWidth, overlayHeight)
+		playerInfoCache.image = util.NewScaledImage(overlayWidth, overlayHeight)
 		playerInfoCache.lastPlayer = player
 
 		util.DrawScaledRect(playerInfoCache.image, 0, 0, overlayWidth, overlayHeight, shared.CLR_OVERLAY)
@@ -63,6 +63,6 @@ func DrawPlayerInfoOverlay(screen *ebiten.Image, player hll.DetailedPlayerInfo) 
 	}
 
 	options := &ebiten.DrawImageOptions{}
-	options.GeoM.Translate(float64(overlayX), 0)
+	options.GeoM.Translate(float64(util.ScaledDim(overlayX)), 0)
 	screen.DrawImage(playerInfoCache.image, options)
 }

@@ -25,7 +25,7 @@ const (
 func DrawScoreboard(screen *ebiten.Image, playerList []hll.DetailedPlayerInfo) {
 	currentTime := time.Now()
 	if cachedScoreboard == nil || currentTime.Sub(lastScoreboardUpdate) >= time.Second {
-		cachedScoreboard = ebiten.NewImage(SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT)
+		cachedScoreboard = util.NewScaledImage(SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT)
 
 		util.DrawScaledRect(cachedScoreboard, 0, 0, SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, shared.CLR_OVERLAY)
 
@@ -66,7 +66,7 @@ func DrawScoreboard(screen *ebiten.Image, playerList []hll.DetailedPlayerInfo) {
 	scoreboardY := (screenHeight - SCOREBOARD_HEIGHT) / 2
 
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(scoreboardX), float64(scoreboardY))
+	op.GeoM.Translate(float64(util.ScaledDim(scoreboardX)), float64(util.ScaledDim(scoreboardY)))
 	screen.DrawImage(cachedScoreboard, op)
 }
 

@@ -47,7 +47,7 @@ const (
 
 func DrawHelp(screen *ebiten.Image) {
 	if helpCache == nil {
-		helpCache = ebiten.NewImage(HELP_WIDTH, HELP_HEIGHT)
+		helpCache = util.NewScaledImage(HELP_WIDTH, HELP_HEIGHT)
 
 		util.DrawScaledRect(helpCache, 0, 0, HELP_WIDTH, HELP_HEIGHT, shared.CLR_OVERLAY)
 
@@ -77,7 +77,7 @@ func DrawHelp(screen *ebiten.Image) {
 	helpY := (screenHeight - HELP_HEIGHT) / 2
 
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(helpX), float64(helpY))
+	op.GeoM.Translate(float64(util.ScaledDim(helpX)), float64(util.ScaledDim(helpY)))
 	screen.DrawImage(helpCache, op)
 }
 
