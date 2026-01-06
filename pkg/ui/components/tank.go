@@ -1,6 +1,7 @@
 package components
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -12,13 +13,30 @@ import (
 )
 
 func DrawTankSquads(screen *ebiten.Image, vd *shared.ViewDimension, roleImages map[string]*ebiten.Image, sv *hll.ServerView, selectedPlayerID string) {
-	for _, squad := range sv.Allies.Squads {
+	// Sort allies squads by name
+	alliesSquadNames := make([]string, 0, len(sv.Allies.Squads))
+	for name := range sv.Allies.Squads {
+		alliesSquadNames = append(alliesSquadNames, name)
+	}
+	slices.Sort(alliesSquadNames)
+
+	for _, name := range alliesSquadNames {
+		squad := sv.Allies.Squads[name]
 		if squad.SquadType == hll.StArmor {
 			isSelected := squad.HasPlayer(selectedPlayerID)
 			drawTankSquad(screen, vd, roleImages, squad, isSelected)
 		}
 	}
-	for _, squad := range sv.Axis.Squads {
+
+	// Sort axis squads by name
+	axisSquadNames := make([]string, 0, len(sv.Axis.Squads))
+	for name := range sv.Axis.Squads {
+		axisSquadNames = append(axisSquadNames, name)
+	}
+	slices.Sort(axisSquadNames)
+
+	for _, name := range axisSquadNames {
+		squad := sv.Axis.Squads[name]
 		if squad.SquadType == hll.StArmor {
 			isSelected := squad.HasPlayer(selectedPlayerID)
 			drawTankSquad(screen, vd, roleImages, squad, isSelected)
