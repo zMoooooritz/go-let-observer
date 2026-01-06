@@ -17,6 +17,24 @@ const (
 	roleCount = 17
 )
 
+func LoadWindowIcon() []image.Image {
+	images := []image.Image{}
+
+	imgData, err := assets.Assets.ReadFile("icon/icon.png")
+	if err != nil {
+		log.Printf("Error loading window icon: %v\n", err)
+		return images
+	}
+
+	img, _, err := image.Decode(bytes.NewReader(imgData))
+	if err != nil {
+		return images
+	}
+
+	images = append(images, img)
+	return images
+}
+
 func LoadRoleImages() map[string]*ebiten.Image {
 	roleImages := make(map[string]*ebiten.Image)
 	for index := range roleCount {

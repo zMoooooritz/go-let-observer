@@ -6,7 +6,7 @@ import (
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 )
 
-//go:embed fonts/* roles/* spawns/* tacmaps/* image/*
+//go:embed fonts/* icon/* image/* roles/* spawns/* tacmaps/*
 var Assets embed.FS
 
 func ToFileName(gameMap hll.Map) string {

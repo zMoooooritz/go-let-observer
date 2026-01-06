@@ -94,6 +94,7 @@ func main() {
 	userInterface := ui.NewUI(viewerMode)
 
 	ebiten.SetWindowSize(screenSize, screenSize)
+	ebiten.SetWindowIcon(util.LoadWindowIcon())
 	ebiten.SetWindowTitle("HLL Observer")
 	if err := ebiten.RunGame(userInterface); err != nil {
 		log.Fatal(err)
