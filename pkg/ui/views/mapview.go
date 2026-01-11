@@ -33,7 +33,7 @@ type MapViewState struct {
 	showPlayers       bool
 	showPlayerInfo    bool
 	showSpawns        bool
-	showTanks         bool
+	showVehicles      bool
 	showHelp          bool
 	showScoreboard    bool
 	initialDataLoaded bool
@@ -91,7 +91,7 @@ func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder re
 			showPlayers:    util.Config.UIOptions.ShowPlayers,
 			showPlayerInfo: util.Config.UIOptions.ShowPlayerInfo,
 			showSpawns:     util.Config.UIOptions.ShowSpawns,
-			showTanks:      util.Config.UIOptions.ShowTanks,
+			showVehicles:   util.Config.UIOptions.ShowVehicles,
 		},
 		FetchState: FetchState{
 			intervalIndex: shared.INITIAL_FETCH_STEP,
@@ -168,8 +168,8 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 		components.DrawPlayers(screen, mv.dim, mv.roleImages, mv.playerList, mv.selectedPlayerID)
 	}
 
-	if mv.showTanks {
-		components.DrawTankSquads(screen, mv.dim, mv.roleImages, mv.serverView, mv.selectedPlayerID)
+	if mv.showVehicles {
+		components.DrawVehicleSquads(screen, mv.dim, mv.roleImages, mv.serverView, mv.selectedPlayerID)
 	}
 
 	if mv.showHelp {
@@ -346,8 +346,8 @@ func (mv *MapView) handleKeyboardInput() {
 		}
 
 		if typedKey == "t" {
-			mv.showTanks = !mv.showTanks
-			mv.notifications.Push(fmt.Sprintf("Show Tanks: %t", mv.showTanks))
+			mv.showVehicles = !mv.showVehicles
+			mv.notifications.Push(fmt.Sprintf("Show Vehicles: %t", mv.showVehicles))
 		}
 
 		if typedKey == "h" {

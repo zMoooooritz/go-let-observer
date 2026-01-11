@@ -37,7 +37,7 @@ type UIOptions struct {
 	ShowPlayers           bool `yaml:"ShowPlayers"`
 	ShowPlayerInfo        bool `yaml:"ShowPlayerInfo"`
 	ShowSpawns            bool `yaml:"ShowSpawns"`
-	ShowTanks             bool `yaml:"ShowTanks"`
+	ShowVehicles          bool `yaml:"ShowTanks"`
 	ShowGridOverlay       bool `yaml:"ShowGridOverlay"`
 	ShowServerInfoOverlay bool `yaml:"ShowServerInfoOverlay"`
 }
@@ -68,7 +68,7 @@ func defaultConfiguration() *Configuration {
 			ShowPlayers:           true,
 			ShowPlayerInfo:        true,
 			ShowSpawns:            false,
-			ShowTanks:             true,
+			ShowVehicles:          true,
 			ShowGridOverlay:       true,
 			ShowServerInfoOverlay: false,
 		},

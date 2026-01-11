@@ -17,7 +17,7 @@ var (
 		{"P", "Toggle players"},
 		{"I", "Toggle player info"},
 		{"S", "Toggle guesstimated spawns"},
-		{"T", "Toggle tanks"},
+		{"T", "Toggle tanks/spas"},
 		{"G", "Toggle grid overlay"},
 		{"H", "Toggle header overlay"},
 		{"Tab", "Show scoreboard"},
