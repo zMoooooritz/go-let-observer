@@ -88,7 +88,7 @@ func drawVehicleSquad(screen *ebiten.Image, vd *shared.ViewDimension, squadImage
 		x = x*vd.ZoomLevel + vd.PanX
 		y = y*vd.ZoomLevel + vd.PanY
 
-		vector.DrawFilledCircle(screen, float32(x), float32(y), float32(util.IconCircleRadius(vd.ZoomLevel, shared.VEHICLE_SIZE_MODIFIER)), clr, false)
+		vector.FillCircle(screen, float32(x), float32(y), float32(util.IconCircleRadius(vd.ZoomLevel, shared.VEHICLE_SIZE_MODIFIER)), clr, false)
 
 		targetSize := util.IconSize(vd.ZoomLevel, shared.VEHICLE_ICON_SIZE_MODIFIER)
 		iconScale := targetSize / float64(squadImage.Bounds().Dx())

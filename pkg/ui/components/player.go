@@ -47,7 +47,7 @@ func drawPlayer(screen *ebiten.Image, vd *shared.ViewDimension, roleImages map[s
 		clr = shared.CLR_SELECTED
 	}
 
-	vector.DrawFilledCircle(screen, float32(x), float32(y), float32(util.IconCircleRadius(vd.ZoomLevel, sizeModifier)), clr, false)
+	vector.FillCircle(screen, float32(x), float32(y), float32(util.IconCircleRadius(vd.ZoomLevel, sizeModifier)), clr, false)
 
 	roleImage, ok := roleImages[strings.ToLower(string(player.Role))]
 	if ok {
@@ -59,6 +59,5 @@ func drawPlayer(screen *ebiten.Image, vd *shared.ViewDimension, roleImages map[s
 		options.GeoM.Translate(x-targetSize/2, y-targetSize/2)
 		colorM := colorm.ColorM{}
 		colorm.DrawImage(screen, roleImage, colorM, options)
-
 	}
 }

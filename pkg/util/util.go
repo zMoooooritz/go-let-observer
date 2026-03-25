@@ -52,7 +52,7 @@ func DrawScaledRect(screen *ebiten.Image, x, y, width, height int, color color.C
 	scaledY := float32(y) * ScaleFactor
 	scaledWidth := float32(width) * ScaleFactor
 	scaledHeight := float32(height) * ScaleFactor
-	vector.DrawFilledRect(screen, scaledX, scaledY, scaledWidth, scaledHeight, color, false)
+	vector.FillRect(screen, scaledX, scaledY, scaledWidth, scaledHeight, color, false)
 }
 
 func ScaledDim[T int | float32 | float64](val T) T {

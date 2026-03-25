@@ -2,6 +2,7 @@ package components
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/zMoooooritz/go-let-loose/pkg/hll"
 	"github.com/zMoooooritz/go-let-observer/pkg/rcndata"
 	"github.com/zMoooooritz/go-let-observer/pkg/ui/shared"
@@ -23,8 +24,8 @@ func DrawSpawns(screen *ebiten.Image, spawns []rcndata.SpawnPoint, spawnImages m
 			clr = shared.CLR_AXIS_DARK
 		}
 
-		rectSize := int(2 * util.IconCircleRadius(vd.ZoomLevel, shared.SPAWN_SIZE_MODIFIER))
-		util.DrawScaledRect(screen, int(x)-rectSize/2, int(y)-rectSize/2, rectSize, rectSize, clr)
+		rectSize := 2 * util.IconCircleRadius(vd.ZoomLevel, shared.SPAWN_SIZE_MODIFIER)
+		vector.FillRect(screen, float32(x)-float32(rectSize)/2, float32(y)-float32(rectSize)/2, float32(rectSize), float32(rectSize), clr, false)
 
 		spawnImage, ok := spawnImages[string(spawn.SpawnType)]
 		if ok {
