@@ -8,11 +8,12 @@ import (
 )
 
 type RconDataSnapshot struct {
-	Players     []hll.DetailedPlayerInfo
-	PlayerMap   map[string]hll.DetailedPlayerInfo
-	CurrentMap  hll.GameMap
-	SessionInfo hll.SessionInfo
-	FetchTime   time.Time
+	Players      []hll.DetailedPlayerInfo
+	PlayerMap    map[string]hll.DetailedPlayerInfo
+	CurrentMap   hll.Map
+	CurrentLayer hll.Layer
+	SessionInfo  hll.SessionInfo
+	FetchTime    time.Time
 }
 
 type DataFetcher interface {
@@ -50,12 +51,18 @@ func (f *RconDataFetcher) FetchRconDataSnapshot() (*RconDataSnapshot, error) {
 		return nil, err
 	}
 
+	layer, err := f.rcon.GetCurrentLayer()
+	if err != nil {
+		return nil, err
+	}
+
 	return &RconDataSnapshot{
-		Players:     players,
-		PlayerMap:   playerMap,
-		CurrentMap:  hll.LogMapNameToMap(sessionInfo.MapName),
-		SessionInfo: sessionInfo,
-		FetchTime:   time.Now(),
+		Players:      players,
+		PlayerMap:    playerMap,
+		CurrentMap:   layer.MapIdentifier.Map(),
+		CurrentLayer: layer,
+		SessionInfo:  sessionInfo,
+		FetchTime:    time.Now(),
 	}, nil
 }
 

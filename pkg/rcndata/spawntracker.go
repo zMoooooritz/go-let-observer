@@ -28,7 +28,7 @@ var spawnTTL = map[SpawnType]time.Duration{
 
 type SpawnPoint struct {
 	Position   hll.Position
-	Team       hll.Team
+	Team       hll.TeamIdentifier
 	SpawnType  SpawnType
 	LastSeen   time.Time
 	SpawnCount int

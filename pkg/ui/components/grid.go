@@ -22,22 +22,23 @@ var (
 	FILL_COLOR = color.RGBA{50, 50, 50, 100}
 )
 
-func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, currentMapID string, gameScore hll.TeamData) {
+func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, currentMapID string, gameScore hll.TeamData, selectedSectors [5]int) {
 	width, height := vd.FrustumSize()
 
 	cellWidth := width / float64(GRID_SIZE)
 	cellHeight := height / float64(GRID_SIZE)
 
-	// activeSectors := []int{1, 2, 1, 0, 0}
-
-	currentMap := hll.MapToGameMap(hll.Map(currentMapID))
+	currentMap, err := hll.ParseMap(currentMapID)
+	if err != nil {
+		return
+	}
 
 	for i := 0; i < GRID_SIZE; i++ {
 		for j := 0; j < GRID_SIZE; j++ {
 			x := float64(i)*cellWidth + vd.PanX
 			y := float64(j)*cellHeight + vd.PanY
 
-			if currentMap.Orientation == hll.OriHorizontal {
+			if currentMap.Orientation == hll.ORIENTATION_HORIZONTAL {
 				if j == 0 || j == 4 {
 					continue
 				}
@@ -60,12 +61,12 @@ func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, currentMapID strin
 					}
 				}
 
-				// if activeSectors[i]+1 == j {
-				// 	vector.FillRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ACTIVE_SECTOR_OVERLAY, false)
-				// }
+				if selectedSectors[i] > 0 && selectedSectors[i] == j {
+					vector.FillRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ACTIVE_SECTOR_OVERLAY, false)
+				}
 			}
 
-			if currentMap.Orientation == hll.OriVertical {
+			if currentMap.Orientation == hll.ORIENTATION_VERTICAL {
 				if i == 0 || i == 4 {
 					continue
 				}
@@ -88,9 +89,9 @@ func DrawGrid(screen *ebiten.Image, vd *shared.ViewDimension, currentMapID strin
 					}
 				}
 
-				// if activeSectors[j]+1 == i {
-				// 	vector.FillRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ACTIVE_SECTOR_OVERLAY, false)
-				// }
+				if selectedSectors[j] > 0 && selectedSectors[j] == i {
+					vector.FillRect(screen, float32(x), float32(y), float32(cellWidth), float32(cellHeight), shared.CLR_ACTIVE_SECTOR_OVERLAY, false)
+				}
 			}
 
 			strokeWidth := util.AdaptiveScaledDim(MAIN_GRID_STROKE_WIDTH, vd.ZoomLevel)

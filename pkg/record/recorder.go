@@ -14,20 +14,20 @@ import (
 )
 
 const (
-	VERSION                = "1.2"
+	VERSION                = "1.3"
 	FULL_SNAPSHOT_INTERVAL = 5 * time.Minute
 )
 
 type DataRecorder interface {
 	RecordSnapshot(data *rcndata.RconDataSnapshot)
-	MapChanged(newMap hll.GameMap)
+	MapChanged(layer hll.Layer)
 	Stop()
 }
 
 type NoRecorder struct{}
 
 func (nr *NoRecorder) RecordSnapshot(data *rcndata.RconDataSnapshot) {}
-func (nr *NoRecorder) MapChanged(newMap hll.GameMap)                 {}
+func (nr *NoRecorder) MapChanged(layer hll.Layer)                    {}
 func (nr *NoRecorder) Stop()                                         {}
 
 func NewNoRecorder() *NoRecorder {
@@ -43,13 +43,14 @@ type MatchRecorder struct {
 	oldData              *rcndata.RconDataSnapshot
 }
 
-func NewMatchRecorder(recordPath string, gameMap hll.GameMap) (*MatchRecorder, error) {
+func NewMatchRecorder(recordPath string, layer hll.Layer) (*MatchRecorder, error) {
 	mr := &MatchRecorder{
 		recordPath:  recordPath,
 		isRecording: true,
 		header: &MatchHeader{
 			Version:   VERSION,
-			MapId:     string(gameMap.ID),
+			MapId:     string(layer.MapIdentifier),
+			LayerId:   string(layer.ID),
 			StartTime: timestamppb.Now(),
 			Players:   make(map[string]*MatchPlayer),
 		},
@@ -98,7 +99,7 @@ func (mr *MatchRecorder) RecordSnapshot(newData *rcndata.RconDataSnapshot) {
 				Deaths:   int32(player.Deaths),
 				Team:     int32(player.Team.ToInt()),
 				Unit:     int32(player.Unit.ID),
-				Role:     int32(player.Role.ToInt()),
+				Role:     int32(player.Role.Role().ID),
 			})
 		}
 		snapshot.Data = &Snapshot_FullSnapshot{FullSnapshot: fullSnapshot}
@@ -137,7 +138,7 @@ func (mr *MatchRecorder) RecordSnapshot(newData *rcndata.RconDataSnapshot) {
 					playerDelta.Unit = &unit
 				}
 				if player.Role != oldPlayerData.Role {
-					role := int32(oldPlayerData.Role.ToInt())
+					role := int32(oldPlayerData.Role.Role().ID)
 					playerDelta.Role = &role
 				}
 				deltaSnapshot.Players = append(deltaSnapshot.Players, playerDelta)
@@ -150,10 +151,10 @@ func (mr *MatchRecorder) RecordSnapshot(newData *rcndata.RconDataSnapshot) {
 	mr.oldData = newData
 }
 
-func (mr *MatchRecorder) MapChanged(gameMap hll.GameMap) {
+func (mr *MatchRecorder) MapChanged(layer hll.Layer) {
 	mr.Stop()
 
-	newRecorder, err := NewMatchRecorder(mr.recordPath, gameMap)
+	newRecorder, err := NewMatchRecorder(mr.recordPath, layer)
 	if err != nil {
 		return
 	}

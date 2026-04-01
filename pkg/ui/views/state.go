@@ -21,8 +21,8 @@ func CreateState(bv *BaseViewer, targetMode shared.PresentationMode, rconCreds *
 		if targetMode == shared.MODE_VIEWER {
 			dataRecorder = record.NewNoRecorder()
 		} else {
-			currMap, _ := rcn.GetCurrentMap()
-			dataRecorder, _ = record.NewMatchRecorder(util.Config.ReplaysDirectory, currMap)
+			currLayer, _ := rcn.GetCurrentLayer()
+			dataRecorder, _ = record.NewMatchRecorder(util.Config.ReplaysDirectory, currLayer)
 		}
 
 		return NewMapView(bv, dataFetcher, dataRecorder), nil

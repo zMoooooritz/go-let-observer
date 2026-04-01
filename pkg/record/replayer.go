@@ -86,16 +86,17 @@ func (r *MatchReplayer) FetchRconDataSnapshot() (*rcndata.RconDataSnapshot, erro
 			Deaths: int(playerState.Deaths),
 			Unit:   hll.Unit{ID: unitID, Name: unitName},
 			Team:   hll.TeamFromInt(int(playerState.Team)),
-			Role:   hll.RoleFromInt(int(playerState.Role)),
+			Role:   hll.RoleFromInt(int(playerState.Role)).Name,
 		}
 		playerMap[player.Id] = detailedPlayer
 		players = append(players, detailedPlayer)
 	}
 
 	return &rcndata.RconDataSnapshot{
-		Players:    players,
-		PlayerMap:  playerMap,
-		CurrentMap: hll.MapToGameMap(hll.Map(r.Header.MapId)),
+		Players:      players,
+		PlayerMap:    playerMap,
+		CurrentMap:   hll.MapIdentifier(r.Header.MapId).Map(),
+		CurrentLayer: hll.LayerIdentifier(r.Header.LayerId).Layer(),
 		SessionInfo: hll.SessionInfo{
 			AlliedScore:        int(snapshot.AlliedScore),
 			AxisScore:          int(snapshot.AxisScore),

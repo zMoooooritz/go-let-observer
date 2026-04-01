@@ -28,16 +28,18 @@ var fetchIntervalSteps = []time.Duration{
 }
 
 type MapViewState struct {
-	showServerInfo    bool
-	showGrid          bool
-	showPlayers       bool
-	showPlayerInfo    bool
-	showSpawns        bool
-	showVehicles      bool
-	showHelp          bool
-	showScoreboard    bool
-	initialDataLoaded bool
-	selectedPlayerID  string
+	showServerInfo     bool
+	showGrid           bool
+	showPlayers        bool
+	showPlayerInfo     bool
+	showSpawns         bool
+	showVehicles       bool
+	showHelp           bool
+	showScoreboard     bool
+	configSectorsState int
+	selectedSectors    [5]int
+	initialDataLoaded  bool
+	selectedPlayerID   string
 }
 
 type InputState struct {
@@ -56,6 +58,7 @@ type FetchState struct {
 type RconData struct {
 	currentMapName  string
 	currentMapID    string
+	currentLayerID  hll.LayerIdentifier
 	serverName      string
 	playerCurrCount int
 	playerMaxCount  int
@@ -86,12 +89,13 @@ func NewMapView(bv *BaseViewer, dataFetcher rcndata.DataFetcher, dataRecorder re
 	mv := &MapView{
 		BaseViewer: bv,
 		MapViewState: MapViewState{
-			showServerInfo: util.Config.UIOptions.ShowServerInfoOverlay,
-			showGrid:       util.Config.UIOptions.ShowGridOverlay,
-			showPlayers:    util.Config.UIOptions.ShowPlayers,
-			showPlayerInfo: util.Config.UIOptions.ShowPlayerInfo,
-			showSpawns:     util.Config.UIOptions.ShowSpawns,
-			showVehicles:   util.Config.UIOptions.ShowVehicles,
+			showServerInfo:     util.Config.UIOptions.ShowServerInfoOverlay,
+			showGrid:           util.Config.UIOptions.ShowGridOverlay,
+			showPlayers:        util.Config.UIOptions.ShowPlayers,
+			showPlayerInfo:     util.Config.UIOptions.ShowPlayerInfo,
+			showSpawns:         util.Config.UIOptions.ShowSpawns,
+			showVehicles:       util.Config.UIOptions.ShowVehicles,
+			configSectorsState: -1,
 		},
 		FetchState: FetchState{
 			intervalIndex: shared.INITIAL_FETCH_STEP,
@@ -157,8 +161,10 @@ func (mv *MapView) Draw(screen *ebiten.Image) {
 	}
 
 	if mv.showGrid {
-		components.DrawGrid(screen, mv.dim, mv.currentMapID, mv.gameScore)
+		components.DrawGrid(screen, mv.dim, mv.currentMapID, mv.gameScore, mv.selectedSectors)
 	}
+
+	components.DrawStrongpoints(screen, mv.dim, mv.currentLayerID, mv.selectedSectors)
 
 	if mv.showSpawns && !mv.dataFetcher.IsUserSeekable() {
 		components.DrawSpawns(screen, mv.spawnTracker.GetSpawns(), mv.spawnImages, mv.dim)
@@ -232,7 +238,7 @@ func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
 		}
 
 		if mv.currentMapName != "" && currMapName != "" {
-			mv.dataRecorder.MapChanged(snapshot.CurrentMap)
+			mv.dataRecorder.MapChanged(snapshot.CurrentLayer)
 		}
 
 		mv.currentMapName = currMapName
@@ -243,6 +249,7 @@ func (mv *MapView) processRconData(snapshot *rcndata.RconDataSnapshot) {
 			log.Println("Error loading tacmap image:", err)
 		}
 	}
+	mv.currentLayerID = snapshot.CurrentLayer.ID
 
 	mv.serverName = snapshot.SessionInfo.ServerName
 	mv.playerCurrCount = snapshot.SessionInfo.PlayerCount
@@ -371,6 +378,31 @@ func (mv *MapView) handleKeyboardInput() {
 
 		if typedKey == "?" {
 			mv.showHelp = !mv.showHelp
+		}
+
+		if mv.configSectorsState >= 0 && mv.configSectorsState < len(mv.selectedSectors) {
+			if typedKey == "0" || typedKey == "1" || typedKey == "2" || typedKey == "3" {
+				sectorIndex := int(typedKey[0] - '0')
+				mv.selectedSectors[mv.configSectorsState] = sectorIndex
+				mv.configSectorsState++
+			}
+			if mv.configSectorsState >= len(mv.selectedSectors) {
+				mv.notifications.Push(fmt.Sprintf("Configured Sectors: %v", mv.selectedSectors))
+			}
+		}
+
+		if typedKey == "c" {
+			if mv.configSectorsState < 0 {
+				mv.notifications.Push("Configuring sectors.")
+				mv.configSectorsState = 0
+			} else if mv.configSectorsState == len(mv.selectedSectors) {
+				mv.notifications.Push("Clearing sector configuration.")
+				mv.configSectorsState = -1
+			} else {
+				mv.notifications.Push("Stopped configuring sectors.")
+				mv.configSectorsState = -1
+			}
+			mv.selectedSectors = [5]int{0, 0, 0, 0, 0}
 		}
 
 	}

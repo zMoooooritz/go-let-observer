@@ -71,6 +71,12 @@ func IconSize(zoomLevel float64, sizeModifier float64) float64 {
 	return (10 + 0.5*zoomLevel) * float64(ScaleFactor) * sizeModifier
 }
 
+func TranslateDistance(sizeX, sizeY int, distance float64) float64 {
+	// Game world is 200000 units wide (from -100000 to 100000)
+	screenDistance := distance * float64(sizeX) / 200000
+	return screenDistance
+}
+
 func TranslateCoords(sizeX, sizeY int, coords hll.Position) (float64, float64) {
 	// Map X from [-100000, 100000] to [0, 1000]
 	screenX := (float64(coords.X) + 100000) * float64(sizeX) / 200000

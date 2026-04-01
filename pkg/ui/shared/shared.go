@@ -40,7 +40,7 @@ var (
 	CLR_OVERLAY               = color.RGBA{0, 0, 0, 200}
 	CLR_ALLIES_OVERLAY        = color.RGBA{30, 30, 60, 40}
 	CLR_AXIS_OVERLAY          = color.RGBA{60, 30, 30, 40}
-	CLR_ACTIVE_SECTOR_OVERLAY = color.RGBA{30, 30, 30, 90}
+	CLR_ACTIVE_SECTOR_OVERLAY = color.RGBA{30, 30, 30, 70}
 
 	FALLBACK_BACKGROUND = color.RGBA{31, 31, 31, 255}
 )

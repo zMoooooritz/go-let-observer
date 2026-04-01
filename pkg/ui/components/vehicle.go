@@ -12,9 +12,9 @@ import (
 	"github.com/zMoooooritz/go-let-observer/pkg/util"
 )
 
-var vehicleSquadImages = map[hll.SquadType]hll.Role{
-	hll.StArmor:     hll.TankCommander,
-	hll.StArtillery: hll.ArtilleryObserver,
+var vehicleSquadImages = map[hll.SquadType]hll.RoleIdentifier{
+	hll.SQUAD_TYPE_ARMOR:     hll.ROLE_TANKCOMMANDER,
+	hll.SQUAD_TYPE_ARTILLERY: hll.ROLE_ARTILLERYOBSERVER,
 }
 
 func DrawVehicleSquads(screen *ebiten.Image, vd *shared.ViewDimension, roleImages map[string]*ebiten.Image, sv *hll.ServerView, selectedPlayerID string) {
@@ -76,7 +76,7 @@ func drawVehicleSquad(screen *ebiten.Image, vd *shared.ViewDimension, squadImage
 	}
 
 	clr := shared.CLR_ALLIES_LIGHT
-	if squad.Team == hll.TmAxis {
+	if squad.Team == hll.TEAM_AXIS {
 		clr = shared.CLR_AXIS_LIGHT
 	}
 	if isSelected {

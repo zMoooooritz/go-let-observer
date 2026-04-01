@@ -20,7 +20,7 @@ func DrawSpawns(screen *ebiten.Image, spawns []rcndata.SpawnPoint, spawnImages m
 		y = y*vd.ZoomLevel + vd.PanY
 
 		clr := shared.CLR_ALLIES_DARK
-		if spawn.Team == hll.TmAxis {
+		if spawn.Team == hll.TEAM_AXIS {
 			clr = shared.CLR_AXIS_DARK
 		}
 

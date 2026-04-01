@@ -39,7 +39,7 @@ func drawPlayer(screen *ebiten.Image, vd *shared.ViewDimension, roleImages map[s
 
 	sizeModifier := shared.PLAYER_SIZE_MODIFIER
 	clr := shared.CLR_ALLIES
-	if player.Team == hll.TmAxis {
+	if player.Team == hll.TEAM_AXIS {
 		clr = shared.CLR_AXIS
 	}
 	if isSelected {

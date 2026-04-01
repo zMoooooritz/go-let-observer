@@ -20,6 +20,7 @@ var (
 		{"T", "Toggle tanks/spas"},
 		{"G", "Toggle grid overlay"},
 		{"H", "Toggle header overlay"},
+		{"C", "Configure sectors (1-3, 0=skip)"},
 		{"Tab", "Show scoreboard"},
 		{"Space", "Toggle replay pause"},
 		{"Right", "Seek forward in replay"},
@@ -56,14 +57,14 @@ func DrawHelp(screen *ebiten.Image) {
 		lineHeight := 30
 		util.DrawText(helpCache, "Help", textX, textY, shared.CLR_WHITE, util.Font.Normal)
 		textY += lineHeight
-		textX += 20
+		textX += 10
 
 		for _, mouseaction := range mouseactions {
 			util.DrawText(helpCache, formatHelpLine(mouseaction.Action, mouseaction.Key), textX, textY, shared.CLR_WHITE, util.Font.Small)
 			textY += 20
 		}
 
-		textY += 20
+		textY += 10
 
 		for _, keybind := range keybinds {
 			util.DrawText(helpCache, formatHelpLine(keybind.Action, keybind.Key), textX, textY, shared.CLR_WHITE, util.Font.Small)

@@ -21,6 +21,7 @@ message MatchHeader {
     google.protobuf.Timestamp start_time = 3;
     google.protobuf.Timestamp end_time = 4;
     map<string, MatchPlayer> players = 5;
+    string layer_id = 6;
 }
 
 message PlayerState {

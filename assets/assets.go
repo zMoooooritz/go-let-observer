@@ -9,45 +9,45 @@ import (
 //go:embed fonts/* icon/* image/* roles/* spawns/* tacmaps/*
 var Assets embed.FS
 
-func ToFileName(gameMap hll.Map) string {
-	switch gameMap {
-	case hll.MP_STMEREEGLISE:
+func ToFileName(mapIdentifier hll.MapIdentifier) string {
+	switch mapIdentifier {
+	case hll.MAP_STMEREEGLISE:
 		return "sme"
-	case hll.MP_STMARIEDUMONT:
+	case hll.MAP_STMARIEDUMONT:
 		return "smdm"
-	case hll.MP_UTAHBEACH:
+	case hll.MAP_UTAHBEACH:
 		return "utah"
-	case hll.MP_OMAHABEACH:
+	case hll.MAP_OMAHABEACH:
 		return "omaha"
-	case hll.MP_PURPLEHEARTLANE:
+	case hll.MAP_PURPLEHEARTLANE:
 		return "phl"
-	case hll.MP_CARENTAN:
+	case hll.MAP_CARENTAN:
 		return "carentan"
-	case hll.MP_HURTGENFOREST:
+	case hll.MAP_HURTGENFOREST:
 		return "hurtgen"
-	case hll.MP_HILL400:
+	case hll.MAP_HILL400:
 		return "hill400"
-	case hll.MP_FOY:
+	case hll.MAP_FOY:
 		return "foy"
-	case hll.MP_KURSK:
+	case hll.MAP_KURSK:
 		return "kursk"
-	case hll.MP_SMOLENSK:
+	case hll.MAP_SMOLENSK:
 		return "smolensk"
-	case hll.MP_STALINGRAD:
+	case hll.MAP_STALINGRAD:
 		return "stalingrad"
-	case hll.MP_REMAGEN:
+	case hll.MAP_REMAGEN:
 		return "remagen"
-	case hll.MP_KHARKOV:
+	case hll.MAP_KHARKOV:
 		return "kharkov"
-	case hll.MP_DRIEL:
+	case hll.MAP_DRIEL:
 		return "driel"
-	case hll.MP_ELALAMEIN:
+	case hll.MAP_ELALAMEIN:
 		return "elalamein"
-	case hll.MP_MORTAIN:
+	case hll.MAP_MORTAIN:
 		return "mortain"
-	case hll.MP_ELSENBORNRIDGE:
+	case hll.MAP_ELSENBORNRIDGE:
 		return "elsenborn"
-	case hll.MP_TOBRUK:
+	case hll.MAP_TOBRUK:
 		return "tobruk"
 	default:
 		return ""

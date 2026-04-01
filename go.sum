@@ -60,6 +60,12 @@ github.com/zMoooooritz/go-let-loose v0.7.0 h1:CL4VvqQyKU/dEdhQo5UHmhFk4BD7QIR+NV
 github.com/zMoooooritz/go-let-loose v0.7.0/go.mod h1:1NDZK47i0ckUBDTmHQNIJlXMwGZwyabNoWqb7GhLz2M=
 github.com/zMoooooritz/go-let-loose v0.7.1 h1:QYfBFQQQeOeDY1h2uYPWUe9NQKfesVcsGJx4gC8mS+c=
 github.com/zMoooooritz/go-let-loose v0.7.1/go.mod h1:1NDZK47i0ckUBDTmHQNIJlXMwGZwyabNoWqb7GhLz2M=
+github.com/zMoooooritz/go-let-loose v1.0.0 h1:QrU6GSOGq3BrFYloAgLM7EzKMYS2wVIF+V50m81sNyU=
+github.com/zMoooooritz/go-let-loose v1.0.0/go.mod h1:1NDZK47i0ckUBDTmHQNIJlXMwGZwyabNoWqb7GhLz2M=
+github.com/zMoooooritz/go-let-loose v1.1.0 h1:u3fCYxC6MTsuz+yToWvhOOh6J1Nl5BOt2LqLWLSv5lo=
+github.com/zMoooooritz/go-let-loose v1.1.0/go.mod h1:1NDZK47i0ckUBDTmHQNIJlXMwGZwyabNoWqb7GhLz2M=
+github.com/zMoooooritz/go-let-loose v1.2.0 h1:a+yTaRHLL4o7yoUh9lQ3EJT7hpV9laqX5PacWFwdNUM=
+github.com/zMoooooritz/go-let-loose v1.2.0/go.mod h1:1NDZK47i0ckUBDTmHQNIJlXMwGZwyabNoWqb7GhLz2M=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
 go.uber.org/goleak v1.3.0/go.mod h1:CoHD4mav9JJNrW/WLlf7HGZPjdw8EucARQHekz1X6bE=
 golang.org/x/image v0.26.0 h1:4XjIFEZWQmCZi6Wv8BoxsDhRU3RVnLX04dToTDAEPlY=

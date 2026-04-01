@@ -38,7 +38,7 @@ func LoadWindowIcon() []image.Image {
 func LoadRoleImages() map[string]*ebiten.Image {
 	roleImages := make(map[string]*ebiten.Image)
 	for index := range roleCount {
-		roleName := strings.ToLower(string(hll.RoleFromInt(index)))
+		roleName := strings.ToLower(string(hll.RoleFromInt(index).Name))
 		imgData, err := assets.Assets.ReadFile("roles/" + roleName + ".png")
 		if err != nil {
 			log.Printf("Error loading role image for %s: %v\n", roleName, err)
