@@ -12,7 +12,7 @@ An **observer tool** for the game **Hell Let Loose**, providing a graphical inte
 
 ## 📸 Preview
 
-| ![HLL-Observer-1](https://github.com/user-attachments/assets/552786c2-6c72-4061-914a-44a07bc1c5e1) | ![HLL-Observer-4](https://github.com/user-attachments/assets/522bd0b8-b446-4956-9539-65678e1d862d) |
+| ![HLL-Observer-1](https://github.com/user-attachments/assets/552786c2-6c72-4061-914a-44a07bc1c5e1) | ![HLL-Observer-2](https://github.com/user-attachments/assets/d8e1c97f-26f2-4baa-af11-a1647d4ef3e2) |
 |:--------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------|
 
 ---
@@ -91,6 +91,7 @@ The following keybinds are configured and can be used:
 | `T`                  | Toggle tanks                       |
 | `G`                  | Toggle grid overlay                |
 | `H`                  | Toggle header overlay              |
+| `C`                  | Configure sectors (1-3, 0=skip)    |
 | `Tab`                | Show scoreboard                    |
 | `Space`              | Toggle replay pause                |
 | `ArrowRight`         | Seek forward in replay             |
