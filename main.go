@@ -68,7 +68,10 @@ func main() {
 
 	flag.Parse()
 
-	util.InitConfig(*config)
+	err := util.InitConfig(*config)
+	if err != nil {
+		fmt.Printf("Error loading configuration: %s\n", err)
+	}
 
 	if *version {
 		showVersion()

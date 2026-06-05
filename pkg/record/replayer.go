@@ -24,7 +24,9 @@ func NewMatchReplayer(filePath string) (*MatchReplayer, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	dataBytes, err := io.ReadAll(file)
 	if err != nil {
@@ -133,11 +135,6 @@ func (r *MatchReplayer) firstTimestamp() time.Time {
 		return r.snapshots[0].Timestamp.AsTime()
 	}
 	return r.Header.StartTime.AsTime()
-}
-
-func (r *MatchReplayer) getStateAt(timestamp time.Time) (*FullSnapshot, error) {
-	state, _, err := r.getStateAndSnapshotAt(timestamp)
-	return state, err
 }
 
 func (r *MatchReplayer) getStateAndSnapshotAt(timestamp time.Time) (*FullSnapshot, *Snapshot, error) {

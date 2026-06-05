@@ -49,6 +49,8 @@ func ToFileName(mapIdentifier hll.MapIdentifier) string {
 		return "elsenborn"
 	case hll.MAP_TOBRUK:
 		return "tobruk"
+	case hll.MAP_JUNOBEACH:
+		return "juno"
 	default:
 		return ""
 	}

@@ -211,7 +211,9 @@ func (mr *MatchRecorder) writeToFile(matchData *MatchData) error {
 	if err != nil {
 		return fmt.Errorf("failed to create match data file: %w", err)
 	}
-	defer dataFile.Close()
+	defer func() {
+		_ = dataFile.Close()
+	}()
 
 	_, err = dataFile.Write(dataBytes)
 	if err != nil {

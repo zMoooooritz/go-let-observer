@@ -46,7 +46,7 @@ func DrawScoreboard(screen *ebiten.Image, playerList []hll.DetailedPlayerInfo) {
 			if i >= 20 {
 				break
 			}
-			kdStr := "0.0"
+			var kdStr string
 			if player.Deaths > 0 {
 				kdStr = fmt.Sprintf("%.2f", float32(player.Kills)/float32(player.Deaths))
 			} else {
